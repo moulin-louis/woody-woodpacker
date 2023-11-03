@@ -2,16 +2,20 @@
 #include <sys/mman.h>
 
 int mapping_all_segments(t_bin *bin) {
+  uint64_t base_address = 0x400000;
   for (program_header_list_t *tmp = bin->program_headers; tmp != NULL; tmp = tmp->next) {
     if (tmp->program_header.p_type == 0x1) {
-      void *address = (void *) tmp->program_header.p_vaddr;
+      uint64_t address = tmp->program_header.p_vaddr + base_address;
       size_t len = tmp->program_header.p_memsz;
-      void *result = mmap(address, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+      address = address & ~(tmp->program_header.p_align -1);
+      printf("mapping segment at %p\n", (void *) address);
+      printf("len = %zu\n", len);
+      void *result = mmap((void *)address, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
       if (result == MAP_FAILED) {
         perror("mmap");
         return 1;
       }
-      if (result != address) {
+      if ((uint64_t)result != address) {
         printf("Error mapping memory at the right address\n");
         return 1;
       }
@@ -34,9 +38,10 @@ program_header_list_t *search_entry_segment(t_bin *bin) {
 }
 
 int setup_permissions_segments(t_bin *bin) {
+  uint64_t base_address = 0x400000;
   for (program_header_list_t *tmp = bin->program_headers; tmp != NULL; tmp = tmp->next) {
     if (tmp->program_header.p_type == 0x1) {
-      uint64_t address = tmp->program_header.p_vaddr;
+      uint64_t address = tmp->program_header.p_vaddr + base_address;
       address = address & ~(tmp->program_header.p_align -1);
       size_t len = tmp->program_header.p_memsz;
       int prot = 0;
@@ -65,7 +70,7 @@ int setup_permissions_segments(t_bin *bin) {
 }
 
 void calling_exe(t_bin *bin, program_header_list_t *segment) {
-  uint64_t address = (uint64_t) (bin->raw_data + segment->program_header.p_offset);
+  uint64_t address = (uint64_t) (bin->raw_data + segment->program_header.p_offset + 0x400000);
   address = address & ~(segment->program_header.p_align -1);
   size_t len = segment->program_header.p_memsz;
   printf("making range %p - %p executable\n", (void *) address, (void *) (address + len));
@@ -74,23 +79,26 @@ void calling_exe(t_bin *bin, program_header_list_t *segment) {
     return;
   }
   void (*fn)(void) = (void (*)(void)) (bin->raw_data + segment->program_header.p_offset);
-  hangup();
+//  hangup();
   printf("Calling function at %p\n\n", fn);
-  hangup();
+//  hangup();
   fn();
 }
 
 int second_stage(t_bin *bin) {
-  printf("Making executable segment executable...\n");
+  printf("mapping all segments\n");
   if (mapping_all_segments(bin)) {
     return 1;
   }
+  printf("searching entry segment\n");
   program_header_list_t *segment = search_entry_segment(bin);
   if (!segment) {
     return 1;
   }
   printf("pid = %d\n", getpid());
+  printf("setting up permissions\n");
   setup_permissions_segments(bin);
+  printf("calling exe\n");
   calling_exe(bin, segment);
   return 0;
 }
@@ -149,9 +157,9 @@ int file = open(av[1], O_RDONLY);
 //    void *address = bin.raw_data + tmp->program_header.p_offset;
 //    hexdump(address, tmp->program_header.p_filesz, 0);
 //  }
-  if (second_stage(&bin)) {
-    printf("Error in second stage\n");
-  }
+//  if (second_stage(&bin)) {
+//    printf("Error in second stage\n");
+//  }
   cleanup(&bin);
   return 0;
 }
