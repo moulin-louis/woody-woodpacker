@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.26)
+project(woody_woodpacker C)
+
+SET (CMAKE_C_COMPILER "/usr/bin/gcc")
+set(CMAKE_C_STANDARD 23)
+include_directories(./inc)
+add_compile_options(-g -Wall -Werror -Wextra)
+
+add_executable(woody_woodpacker
+        src/main.c
+        src/utils.c
+        src/program_header.c
+        src/section_header.c)
