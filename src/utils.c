@@ -24,6 +24,34 @@ __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
   dprintf(1, "\n");
 }
 
+void asciidump(void *data, size_t len, uint32_t row) {
+  if (row == 0) {
+    for (size_t i = 0; i < len; i++) {
+      if (((uint8_t *) data)[i] >= 0x20 && ((uint8_t *) data)[i] <= 0x7e) {
+        dprintf(1, "%c", ((uint8_t *) data)[i]);
+      } else {
+        dprintf(1, ".");
+      }
+    }
+    dprintf(1, "\n");
+    return;
+  }
+  for (size_t i = 0; i < len; i += row) {
+    for (size_t j = i; j < i + row; j++) {
+      if (j == len) {
+        break;
+      }
+      if (((uint8_t *) data)[j] >= 0x20 && ((uint8_t *) data)[j] <= 0x7e) {
+        dprintf(1, "%c", ((uint8_t *) data)[j]);
+      } else {
+        dprintf(1, ".");
+      }
+    }
+    dprintf(1, "\n");
+  }
+  dprintf(1, "\n");
+}
+
 int read_file(int file, char **result, size_t *len) {
   while (1) {
     char buff[8192];
@@ -173,5 +201,24 @@ char *type_program_to_str(typeProgram type_program) {
 
 void hangup(void) {
   char buf[1];
-  read(1, buf, 1);
+  ssize_t retval = read(1, buf, 1);
+  (void)retval;
+}
+
+void cleanup(t_bin *bin) {
+  //clean program header list
+  program_header_list_t *tmp = bin->program_headers;
+  while (tmp) {
+    program_header_list_t *next = tmp->next;
+    free(tmp);
+    tmp = next;
+  }
+  //clean section header list
+  section_header_list_t *tmp2 = bin->section_headers;
+  while (tmp2) {
+    section_header_list_t *next = tmp2->next;
+    free(tmp2);
+    tmp2 = next;
+  }
+  free(bin->raw_data);
 }

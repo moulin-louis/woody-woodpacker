@@ -23,6 +23,8 @@ void print_program_headers(program_header_list_t *head) {
   printf("\nPARSING AND PRINTING ALL PROGRAM HEADERS\n\n");
   size_t nbr_node = 0;
   for (program_header_list_t *tmp = head; tmp != NULL; tmp = tmp->next) {
+    if (tmp->program_header.p_type != PT_LOAD)
+      continue;
     print_program_header(&tmp->program_header);
     printf("\n");
     nbr_node +=1;

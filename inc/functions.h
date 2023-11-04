@@ -13,6 +13,8 @@ __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row);
 int read_file(int file, char **result, size_t *len);
 void print_elf_header(elf_header_t *header);
 void hangup(void);
+void cleanup(t_bin *bin);
+void asciidump(void *data, size_t len, uint32_t row);
 
 /*PROGRAM HEADER STUFF*/
 void lst_add_back_program_header(program_header_list_t **head, program_header_t *data);

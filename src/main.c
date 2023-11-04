@@ -1,15 +1,19 @@
 #include "woody.h"
 #include <sys/mman.h>
 
+#define BASE_ADDRESS 0x400000
+
 int mapping_all_segments(t_bin *bin) {
-  uint64_t base_address = 0x400000;
   for (program_header_list_t *tmp = bin->program_headers; tmp != NULL; tmp = tmp->next) {
     if (tmp->program_header.p_type == 0x1) {
-      uint64_t address = tmp->program_header.p_vaddr + base_address;
-      size_t len = tmp->program_header.p_memsz;
+      uint64_t address = tmp->program_header.p_vaddr + BASE_ADDRESS;
       address = address & ~(tmp->program_header.p_align -1);
-      printf("mapping segment at %p\n", (void *) address);
-      printf("len = %zu\n", len);
+      uint64_t padding = (tmp->program_header.p_vaddr + BASE_ADDRESS) - address;
+      size_t len = tmp->program_header.p_memsz + padding;
+      printf("mapping memory range from %p to %p\n", (void *) address, (void *) (address + len));
+      if (len == 0) {
+        continue;
+      }
       void *result = mmap((void *)address, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
       if (result == MAP_FAILED) {
         perror("mmap");
@@ -38,10 +42,9 @@ program_header_list_t *search_entry_segment(t_bin *bin) {
 }
 
 int setup_permissions_segments(t_bin *bin) {
-  uint64_t base_address = 0x400000;
   for (program_header_list_t *tmp = bin->program_headers; tmp != NULL; tmp = tmp->next) {
     if (tmp->program_header.p_type == 0x1) {
-      uint64_t address = tmp->program_header.p_vaddr + base_address;
+      uint64_t address = tmp->program_header.p_vaddr + BASE_ADDRESS;
       address = address & ~(tmp->program_header.p_align -1);
       size_t len = tmp->program_header.p_memsz;
       int prot = 0;
@@ -69,56 +72,29 @@ int setup_permissions_segments(t_bin *bin) {
   return 0;
 }
 
-void calling_exe(t_bin *bin, program_header_list_t *segment) {
-  uint64_t address = (uint64_t) (bin->raw_data + segment->program_header.p_offset + 0x400000);
-  address = address & ~(segment->program_header.p_align -1);
-  size_t len = segment->program_header.p_memsz;
-  printf("making range %p - %p executable\n", (void *) address, (void *) (address + len));
-  if (mprotect((void *) address, len, PROT_READ | PROT_EXEC) == 1) {
-    perror("mprotect");
-    return;
-  }
-  void (*fn)(void) = (void (*)(void)) (bin->raw_data + segment->program_header.p_offset);
-//  hangup();
-  printf("Calling function at %p\n\n", fn);
-//  hangup();
-  fn();
-}
-
 int second_stage(t_bin *bin) {
+  printf("pid = %d\n", getpid());
   printf("mapping all segments\n");
   if (mapping_all_segments(bin)) {
     return 1;
   }
-  printf("searching entry segment\n");
-  program_header_list_t *segment = search_entry_segment(bin);
-  if (!segment) {
-    return 1;
-  }
-  printf("pid = %d\n", getpid());
-  printf("setting up permissions\n");
   setup_permissions_segments(bin);
+  printf("searching entry segment\n");
+//  hangup();
+//  program_header_list_t *segment = search_entry_segment(bin);
+//  if (!segment) {
+//    printf("Error searching entry segment\n");
+//    return 1;
+//  }
+  printf("setting up permissions\n");
   printf("calling exe\n");
-  calling_exe(bin, segment);
+  uint64_t addres_entry = bin->header.e_entry + BASE_ADDRESS;
+  printf("address entry = %p\n", (void *) addres_entry);
+//  hangup();
+  printf("Jumping to entry point\n");
+  fflush(stdout);
+  ((void (*)(void)) addres_entry)();
   return 0;
-}
-
-void cleanup(t_bin *bin) {
-  //clean program header list
-  program_header_list_t *tmp = bin->program_headers;
-  while (tmp) {
-    program_header_list_t *next = tmp->next;
-    free(tmp);
-    tmp = next;
-  }
-  //clean section header list
-  section_header_list_t *tmp2 = bin->section_headers;
-  while (tmp2) {
-    section_header_list_t *next = tmp2->next;
-    free(tmp2);
-    tmp2 = next;
-  }
-  free(bin->raw_data);
 }
 
 int main(int ac, char **av) {
@@ -148,15 +124,22 @@ int file = open(av[1], O_RDONLY);
     printf("This is not an ELF file\n");
     return 4;
   }
-  print_elf_header(&bin.header);
+//  print_elf_header(&bin.header);
   parse_program_headers(&bin);
   parse_section_headers(&bin);
-  printf("PRINTING DATA OF ALL PROGRAM HEADERS\n");
-  print_program_headers(bin.program_headers);
-//  for (program_header_list_t *tmp = bin.program_headers; tmp != NULL; tmp = tmp->next) {
-//    void *address = bin.raw_data + tmp->program_header.p_offset;
-//    hexdump(address, tmp->program_header.p_filesz, 0);
-//  }
+//  printf("PRINTING DATA OF ALL PROGRAM HEADERS\n");
+//  print_program_headers(bin.program_headers);
+  for (program_header_list_t *tmp = bin.program_headers; tmp != NULL; tmp = tmp->next) {
+    if (tmp->program_header.p_type != PT_LOAD) {
+    continue;
+    }
+    void *address = bin.raw_data + tmp->program_header.p_offset;
+    printf("ASCII DUMP:\n");
+    asciidump(address, tmp->program_header.p_filesz, 0);
+    printf("HEX DUMP:\n");
+    hexdump(address, tmp->program_header.p_filesz, 0);
+    printf("\n");
+  }
 //  if (second_stage(&bin)) {
 //    printf("Error in second stage\n");
 //  }
