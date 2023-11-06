@@ -21,17 +21,13 @@ void parse_program_headers(t_bin *bin) {
 
 void print_program_headers(program_header_list_t *head) {
   printf("\nPARSING AND PRINTING ALL PROGRAM HEADERS\n\n");
-  size_t nbr_node = 0;
   for (program_header_list_t *tmp = head; tmp != NULL; tmp = tmp->next) {
     if (tmp->program_header.p_type != PT_LOAD)
       continue;
     print_program_header(&tmp->program_header);
     printf("\n");
-    nbr_node +=1;
   }
-  printf("There is %ld segment\n", nbr_node);
 }
-
 void print_program_header(program_header_t *programHeader) {
   printf("Type: 0x%08x - ", programHeader->p_type);
   printf("%s\n", type_program_to_str(programHeader->p_type));
