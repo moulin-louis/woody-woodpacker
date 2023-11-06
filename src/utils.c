@@ -220,7 +220,9 @@ char *type_dynamic_to_str(typeDynamic tag) {
     case DT_FINI_ARRAY:
       return ("DT_FINI_ARRAY");
     case DT_INIT_ARRAYSZ:
-      return ("DT_INIT");
+      return ("DT_INIT_ARRAYSZ");
+    case DT_FLAGS:
+      return ("DT_FLAGS");
     case DT_GNUHASH:
       return ("DT_GNUHASH");
     case DT_FLAGS1:
@@ -237,13 +239,38 @@ __attribute__((unused)) void hangup(void) {
   (void)retval;
 }
 
+segment_header_t *search_segment_type(t_bin *bin, typeProgram type_program) {
+  for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
+    if (segment->p_type == type_program) {
+      return segment;
+    }
+  }
+  return NULL;
+}
+
+segment_dyn_t *search_segment_dyn_type(t_bin *bin, typeDynamic type_dynamic) {
+  for (segment_dyn_t *segment = bin->dynamic_segment; segment != NULL; segment = segment->next) {
+    if (segment->d_tag == type_dynamic) {
+      return segment;
+    }
+  }
+  return NULL;
+}
+
 void cleanup(t_bin *bin) {
   //clean program header list
-  segment_header_t *tmp = bin->program_headers;
-  while (tmp) {
-    segment_header_t *next = tmp->next;
-    free(tmp);
-    tmp = next;
+  segment_header_t *tmp_segment = bin->program_headers;
+  while (tmp_segment) {
+    segment_header_t *next = tmp_segment->next;
+    free(tmp_segment);
+    tmp_segment = next;
+  }
+  //clean dynamic segment list
+  segment_dyn_t *tmp_dyn = bin->dynamic_segment;
+  while (tmp_dyn) {
+    segment_dyn_t *next = tmp_dyn->next;
+    free(tmp_dyn);
+    tmp_dyn = next;
   }
   free(bin->raw_data);
 }

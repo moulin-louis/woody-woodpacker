@@ -4,12 +4,10 @@
 
 #include "woody.h"
 
-#define BASE_ADDRESS 0x400000
-
 void print_dynamic_segment(segment_dyn_t *segment) {
   printf("Tag: 0x%016lx - ", segment->d_tag);
   printf("%s\n", type_dynamic_to_str(segment->d_tag));
-  printf("Value: 0x%016lx\n", segment->d_ptr);
+  printf("Value/Pointer: 0x%016lx\n", segment->d_val);
 }
 
 void print_dynamic_segments(segment_dyn_t *head) {
@@ -49,14 +47,14 @@ int parse_dynamic_segment(t_bin *bin) {
     return 0;
   }
   size_t curr_offset = segment->p_offset;
-  for (uint idx = 0; idx != segment->p_filesz / sizeof(segment_dyn_t); idx++) {
+  for (uint idx = 0; idx < segment->p_filesz; idx += SIZE_OF_DYNAMIC_SEGMENT) {
     segment_dyn_t tmp = {0};
-    memcpy(&tmp, bin->raw_data + curr_offset, sizeof(segment_dyn_t));
+    memcpy(&tmp, bin->raw_data + curr_offset,SIZE_OF_DYNAMIC_SEGMENT);
     if (tmp.d_tag == DT_NULL) {
       break;
     }
     lst_add_back_segment_dyn(bin, &bin->dynamic_segment, &tmp);
-    curr_offset += sizeof(segment_dyn_t);
+    curr_offset += SIZE_OF_DYNAMIC_SEGMENT;
   }
   return 0;
 }

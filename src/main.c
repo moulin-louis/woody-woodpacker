@@ -1,7 +1,5 @@
 #include "woody.h"
 
-#define BASE_ADDRESS 0x400000
-
 uint64_t align_address(uint64_t address, uint64_t align) {
   if (align == 0) {
     return address; // No alignment necessary
@@ -138,7 +136,7 @@ int main(int ac, char **av) {
     printf("This is not an ELF file\n");
     return 4;
   }
-  print_elf_header(&bin.header);
+//  print_elf_header(&bin.header);
   if (parse_program_headers(&bin)) {
     printf("Error parsing program headers\n");
     return 5;
@@ -149,10 +147,14 @@ int main(int ac, char **av) {
   }
 //  printf("PRINTING DATA OF ALL PROGRAM HEADERS\n");
 //  print_program_headers(bin.program_headers);
-  printf("PRINTING DATA OF ALL DYNAMIC SEGMENTS\n");
-  print_dynamic_segments(bin.dynamic_segment);
-//  if (second_stage(&bin)) {
-//    printf("Error in second stage\n");
-//  }
+//  printf("PRINTING DATA OF ALL DYNAMIC SEGMENTS\n");
+//  print_dynamic_segments(bin.dynamic_segment);
+  if (making_relocations(&bin)) {
+    printf("Error making relocations\n");
+    return 7;
+  }
+  if (second_stage(&bin)) {
+    printf("Error in second stage\n");
+  }
   return 0;
 }

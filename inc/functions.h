@@ -16,6 +16,11 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row);
 int parse_dynamic_segment(t_bin *bin);
 char *type_dynamic_to_str(typeDynamic tag);
 void print_dynamic_segments(segment_dyn_t *head);
+void print_dynamic_segment(segment_dyn_t *segment);
+segment_header_t *search_segment_type(t_bin *bin, typeProgram type_program);
+segment_dyn_t *search_segment_dyn_type(t_bin *bin, typeDynamic type_dynamic);
+
+int making_relocations(t_bin *bin);
 
 /*PROGRAM HEADER STUFF*/
 void lst_add_back_program_header(t_bin* bin, segment_header_t **head, segment_header_t *data);

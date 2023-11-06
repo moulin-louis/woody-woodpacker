@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define BASE_ADDRESS 0x400000
+
 #include "structure.h"
 #include "functions.h"
 

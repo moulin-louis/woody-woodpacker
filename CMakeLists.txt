@@ -11,4 +11,5 @@ add_executable(woody_woodpacker
         src/utils.c
         src/segment_header.c
         src/dynamic_segment.c
+        src/relocations.c
 )

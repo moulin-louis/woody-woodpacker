@@ -80,6 +80,7 @@ typedef enum type_dynamic {
   DT_INIT_ARRAY = 0x19,
   DT_FINI_ARRAY = 0x1a,
   DT_INIT_ARRAYSZ = 0x1b,
+  DT_FLAGS = 0x1e,
   DT_GNUHASH = 0x6ffffef5,
   DT_FLAGS1 = 0x6ffffffb,
   DT_RELACOUNT = 0x6ffffff9,
@@ -89,9 +90,20 @@ typedef enum type_dynamic {
 
 typedef struct segment_dyn_s {
   uint64_t d_tag;
-  uint64_t d_ptr;
+  union {
+    uint64_t d_ptr;
+    uint64_t d_val;
+  };
   struct segment_dyn_s *next;
 } segment_dyn_t;
+
+typedef struct relocation_type_s {
+  uint64_t r_offset; /* Address of reference */
+  uint32_t type; /* Relocation type */
+  uint32_t sym; /* Symbol index */
+  uint64_t r_addend; /* Constant part of expression */
+} relocation_type_t;
+
 
 typedef struct segment_header_s {
   typeProgram p_type; //type segment: 0x1(loadable segment), 0x2(dynamic linking segment), etc
