@@ -9,7 +9,7 @@ add_compile_options(-g -Wall -Werror -Wextra)
 add_executable(woody_woodpacker
         src/main.c
         src/utils.c
-        src/segment_header.c
-        src/dynamic_segment.c
+        src/parsing/segment_header.c
+        src/parsing/dynamic_segment.c
         src/relocations.c
 )

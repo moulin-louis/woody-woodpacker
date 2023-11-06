@@ -37,7 +37,7 @@ int parse_program_headers(t_bin *bin) {
 void print_program_headers(segment_header_t *head) {
   printf("\nPARSING AND PRINTING ALL PROGRAM HEADERS\n\n");
   for (segment_header_t *tmp = head; tmp != NULL; tmp = tmp->next) {
-    if (tmp->p_type != PT_DYNAMIC)
+    if (tmp->p_type != PT_LOAD)
       continue;
     print_program_header(tmp);
     printf("\n");

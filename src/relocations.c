@@ -5,12 +5,16 @@
 #include "woody.h"
 
 int making_relocations(t_bin *bin) {
+  if (search_segment_type(bin, PT_DYNAMIC) == NULL) {
+    printf("NO DYNAMIC SEGMENT SO NO RELOCATIONS\n");
+    return 0;
+  }
   segment_dyn_t *rela_segment = search_segment_dyn_type(bin, DT_RELA);
   segment_dyn_t *relazs_segment = search_segment_dyn_type(bin, DT_RELASZ);
   segment_dyn_t *relaent_segment = search_segment_dyn_type(bin, DT_RELAENT);
   if (!rela_segment || !relazs_segment || !relaent_segment) {
     printf("NO RELA/RELASZ/RELAENT SEGMENT\n");
-    return 1;
+    return 0;
   }
 //  print_dynamic_segment(rela_segment);
 //  print_dynamic_segment(relazs_segment);
