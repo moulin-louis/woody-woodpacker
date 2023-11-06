@@ -5,13 +5,6 @@
 #ifndef WOODY_WOODPACKER_STRUCTURE_H
 #define WOODY_WOODPACKER_STRUCTURE_H
 
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-
 typedef struct elf_header_s {
   uint8_t magic[4]; //magic number, 0x7F + "ELF"
   uint8_t class; // class: 1(32 bits) or 2(64 bits)
@@ -33,6 +26,8 @@ typedef struct elf_header_s {
   uint16_t e_shnum; // number of program section table entry
   uint16_t e_shstrndx; // index of the name section in the section header table
 } elf_header_t;
+
+#define SIZE_OF_PROGRAM_HEADER sizeof(segment_header_t) - sizeof(segment_header_t *)
 
 typedef enum type_program {
   PT_NULL = 0x0,
@@ -56,7 +51,49 @@ typedef enum type_program {
   PT_GNU_PROPERTY = 0x6474e553,
 } typeProgram;
 
-typedef struct program_header_s {
+typedef enum type_dynamic {
+  DT_NULL = 0x0,
+  DT_NEEDED = 0x1,
+  DT_PLTRELSZ = 0x2,
+  DT_PLTGOT = 0x3,
+  DT_HASH = 0x4,
+  DT_STRTAB = 0x5,
+  DT_SYMTAB = 0x6,
+  DT_RELA = 0x7,
+  DT_RELASZ = 0x8,
+  DT_RELAENT = 0x9,
+  DT_STRSZ = 0xa,
+  DT_SYMENT = 0xb,
+  DT_INIT = 0xc,
+  DT_FINI = 0xd,
+  DT_SONAME = 0xe,
+  DT_RPATH = 0xf,
+  DT_SYMBOLIC = 0x10,
+  DT_REL = 0x11,
+  DT_RELSZ = 0x12,
+  DT_RELENT = 0x13,
+  DT_PLTREL = 0x14,
+  DT_DEBUG = 0x15,
+  DT_TEXTREL = 0x16,
+  DT_JMPREL = 0x17,
+  DT_BIND_NOW = 0x18,
+  DT_INIT_ARRAY = 0x19,
+  DT_FINI_ARRAY = 0x1a,
+  DT_INIT_ARRAYSZ = 0x1b,
+  DT_GNUHASH = 0x6ffffef5,
+  DT_FLAGS1 = 0x6ffffffb,
+  DT_RELACOUNT = 0x6ffffff9,
+} typeDynamic;
+
+#define SIZE_OF_DYNAMIC_SEGMENT sizeof(segment_dyn_t) - sizeof(segment_dyn_t *)
+
+typedef struct segment_dyn_s {
+  uint64_t d_tag;
+  uint64_t d_ptr;
+  struct segment_dyn_s *next;
+} segment_dyn_t;
+
+typedef struct segment_header_s {
   typeProgram p_type; //type segment: 0x1(loadable segment), 0x2(dynamic linking segment), etc
   uint32_t p_flags; // segment dependent flags: 0x1(executable segment), 0x2(writeable segment), 0x3(readable segment)
   uint64_t p_offset; // offset to the segment in the file
@@ -65,37 +102,15 @@ typedef struct program_header_s {
   uint64_t p_filesz; // size of the segment in the file, may be 0
   uint64_t p_memsz; // size of the segment in memory, may be 0
   uint64_t p_align; //alignment of the segment (?), 0 and 1 means no alignment
-} program_header_t;
-
-typedef struct section_header_s {
-  uint32_t sh_name; //offset in the name section that represent the name of this segment
-  uint32_t sh_type; // type of header: 0x1(program raw_data), 0x3(string table), etc
-  uint64_t sh_flags; //attributes of the section: 0x1(writable), 0x20(null-terminated string), etc
-  uint64_t sh_addr; //virtual addres of the section if loaded
-  uint64_t sh_offset; // offset of the section in the file
-  uint64_t sh_size; //size of the section in the file, may be 0
-  uint32_t sh_link; //may contain section index of an associated section based on the current section type
-  uint32_t sh_info; //may contain section info based on the current section type
-  uint64_t sh_addralign; //required alignement of the section, must be a power of 2
-  uint64_t sh_entsize; // may contain the size of each entry based on the section type
-} section_header_t;
-
-typedef struct program_header_list_s {
-  program_header_t program_header;
-  struct program_header_list_s *next;
-} program_header_list_t;
-
-typedef struct section_header_list_s {
-  section_header_t section_header;
-  struct section_header_list_s *next;
-} section_header_list_t;
+  struct segment_header_s *next;
+} segment_header_t;
 
 typedef struct {
   uint8_t *raw_data;
   size_t data_len;
   elf_header_t header;
-  program_header_list_t *program_headers;
-  section_header_list_t *section_headers;
+  segment_header_t *program_headers;
+  segment_dyn_t *dynamic_segment; //NULL IF NO DYNAMIC SEGMENT
 } t_bin;
 
 #endif //WOODY_WOODPACKER_STRUCTURE_H

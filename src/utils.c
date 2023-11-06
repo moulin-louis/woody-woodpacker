@@ -24,7 +24,7 @@ __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
   dprintf(1, "\n");
 }
 
-void asciidump(void *data, size_t len, uint32_t row) {
+__attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
   if (row == 0) {
     for (size_t i = 0; i < len; i++) {
       if (((uint8_t *) data)[i] >= 0x20 && ((uint8_t *) data)[i] <= 0x7e) {
@@ -75,43 +75,7 @@ int read_file(int file, char **result, size_t *len) {
   return 0;
 }
 
-program_header_list_t *lst_new_program_header(program_header_t *data) {
-  program_header_list_t *result = calloc(1, sizeof(program_header_list_t));
-  memcpy(&result->program_header, data, sizeof(*data));
-  return result;
-}
-
-void lst_add_back_program_header(program_header_list_t **head, program_header_t *data) {
-  if (*head == NULL) {
-    *head = lst_new_program_header(data);
-    return;
-  }
-  program_header_list_t *tmp = *head;
-  while (tmp->next) {
-    tmp = tmp->next;
-  }
-  tmp->next = lst_new_program_header(data);
-}
-
-section_header_list_t *lst_new_section_header(section_header_t *data) {
-  section_header_list_t *result = calloc(1, sizeof(section_header_list_t));
-  memcpy(&result->section_header, data, sizeof(*data));
-  return result;
-}
-
-void lst_add_back_section_header(section_header_list_t **head, section_header_t *data) {
-  if (*head == NULL) {
-    *head = lst_new_section_header(data);
-    return;
-  }
-  section_header_list_t *tmp = *head;
-  while (tmp->next) {
-    tmp = tmp->next;
-  }
-  tmp->next = lst_new_section_header(data);
-}
-
-void print_elf_header(elf_header_t *header) {
+__attribute__((unused)) void print_elf_header(elf_header_t *header) {
   printf("Magic: %02x %02x %02x %02x\n", header->magic[0], header->magic[1], header->magic[2], header->magic[3]);
   printf("Class: 0x%02x - ", header->class);
   switch (header->class) {
@@ -199,7 +163,75 @@ char *type_program_to_str(typeProgram type_program) {
   }
 }
 
-void hangup(void) {
+char *type_dynamic_to_str(typeDynamic tag) {
+  switch (tag) {
+    case DT_NULL:
+      return ("DT_NULL");
+    case DT_NEEDED:
+      return ("DT_NEEDED");
+    case DT_PLTRELSZ:
+      return ("DT_PLTRELSZ");
+    case DT_PLTGOT:
+      return ("DT_PLTGOT");
+    case DT_HASH:
+      return ("DT_HASH");
+    case DT_STRTAB:
+      return ("DT_STRTAB");
+    case DT_SYMTAB:
+      return ("DT_SYMTAB");
+    case DT_RELA:
+      return ("DT_RELA");
+    case DT_RELASZ:
+      return ("DT_RELASZ");
+    case DT_RELAENT:
+      return ("DT_RELAENT");
+    case DT_STRSZ:
+      return ("DT_STRSZ");
+    case DT_SYMENT:
+      return ("DT_SYMENT");
+    case DT_INIT:
+      return ("DT_INIT");
+    case DT_FINI:
+      return ("DT_FINI");
+    case DT_SONAME:
+      return ("DT_SONAME");
+    case DT_RPATH:
+      return ("DT_RPATH");
+    case DT_SYMBOLIC:
+      return ("DT_SYMBOLIC");
+    case DT_REL:
+      return ("DT_REL");
+    case DT_RELSZ:
+      return ("DT_RELSZ");
+    case DT_RELENT:
+      return ("DT_RELENT");
+    case DT_PLTREL:
+      return ("DT_PLTREL");
+    case DT_DEBUG:
+      return ("DT_DEBUG");
+    case DT_TEXTREL:
+      return ("DT_TEXTREL");
+    case DT_JMPREL:
+      return ("DT_JMPREL");
+    case DT_BIND_NOW:
+      return ("DT_BIND_NOW");
+    case DT_INIT_ARRAY:
+      return ("DT_INIT_ARRAY");
+    case DT_FINI_ARRAY:
+      return ("DT_FINI_ARRAY");
+    case DT_INIT_ARRAYSZ:
+      return ("DT_INIT");
+    case DT_GNUHASH:
+      return ("DT_GNUHASH");
+    case DT_FLAGS1:
+      return ("DT_FLAGS1");
+    case DT_RELACOUNT:
+      return ("DT_RELACOUNT");
+  }
+  return ("Unknown");
+}
+
+__attribute__((unused)) void hangup(void) {
   char buf[1];
   ssize_t retval = read(1, buf, 1);
   (void)retval;
@@ -207,18 +239,11 @@ void hangup(void) {
 
 void cleanup(t_bin *bin) {
   //clean program header list
-  program_header_list_t *tmp = bin->program_headers;
+  segment_header_t *tmp = bin->program_headers;
   while (tmp) {
-    program_header_list_t *next = tmp->next;
+    segment_header_t *next = tmp->next;
     free(tmp);
     tmp = next;
-  }
-  //clean section header list
-  section_header_list_t *tmp2 = bin->section_headers;
-  while (tmp2) {
-    section_header_list_t *next = tmp2->next;
-    free(tmp2);
-    tmp2 = next;
   }
   free(bin->raw_data);
 }

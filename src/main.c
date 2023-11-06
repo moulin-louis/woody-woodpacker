@@ -1,5 +1,4 @@
 #include "woody.h"
-#include <sys/mman.h>
 
 #define BASE_ADDRESS 0x400000
 
@@ -11,7 +10,7 @@ uint64_t align_address(uint64_t address, uint64_t align) {
   return aligned_address;
 }
 
-int setup_permission(program_header_t *program_header, uint64_t address, size_t len) {
+int setup_permission(segment_header_t *program_header, uint64_t address, size_t len) {
   int prot = PROT_NONE;
   printf("setup permission: ");
   if (program_header->p_flags & 0x4) {
@@ -37,39 +36,32 @@ int setup_permission(program_header_t *program_header, uint64_t address, size_t 
   return 0;
 }
 
-void init_memory(void *result, program_header_list_t *segment,t_bin *bin) {
-//  printf("init memory\n");
-//  printf("address = %p\n", result);
-//  printf("p_memsz = 0x%lx\n", segment->program_header.p_memsz);
-//  printf("p_filesz = 0x%lx\n", segment->program_header.p_filesz);
-  if (segment->program_header.p_memsz == segment->program_header.p_filesz) {
-//    printf("memzs == filesz\n");
-    memcpy(result, bin->raw_data + segment->program_header.p_offset, segment->program_header.p_filesz);
+void init_memory(void *result, segment_header_t *segment, t_bin *bin) {
+  if (segment->p_memsz == segment->p_filesz) {
+    memcpy(result, bin->raw_data + segment->p_offset, segment->p_filesz);
     return;
-  } else if (segment->program_header.p_memsz > segment->program_header.p_filesz) {
-//    printf("memsz > filesz\n");
-    memcpy(result, bin->raw_data + segment->program_header.p_offset, segment->program_header.p_filesz);
-    memset(result + segment->program_header.p_filesz, 0, segment->program_header.p_memsz - segment->program_header.p_filesz);
+  } else if (segment->p_memsz > segment->p_filesz) {
+    memcpy(result, bin->raw_data + segment->p_offset, segment->p_filesz);
+    memset(result + segment->p_filesz, 0, segment->p_memsz - segment->p_filesz);
     return;
-  } else if (segment->program_header.p_memsz < segment->program_header.p_filesz) {
-//    printf("memsz < filesz\n");
-    memcpy(result, bin->raw_data + segment->program_header.p_offset, segment->program_header.p_memsz);
+  } else if (segment->p_memsz < segment->p_filesz) {
+    memcpy(result, bin->raw_data + segment->p_offset, segment->p_memsz);
     return;
   }
-  memset(result, 0, segment->program_header.p_memsz);
+  memset(result, 0, segment->p_memsz);
 }
 
 int mapping_all_loadable_segments(t_bin *bin) {
-  for (program_header_list_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
-    if (segment->program_header.p_type != PT_LOAD) {
+  for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
+    if (segment->p_type != PT_LOAD) {
       continue;
     }
-    uint64_t address = segment->program_header.p_vaddr + BASE_ADDRESS;
-    uint64_t allign_address = align_address(address, segment->program_header.p_align);
+    uint64_t address = segment->p_vaddr + BASE_ADDRESS;
+    uint64_t allign_address = align_address(address, segment->p_align);
     uint64_t padding = address - allign_address;
-    size_t len = segment->program_header.p_memsz + padding;
-    if (len < segment->program_header.p_align) {
-      len = segment->program_header.p_align;
+    size_t len = segment->p_memsz + padding;
+    if (len < segment->p_align) {
+      len = segment->p_align;
     }
     void *result = mmap((void *)allign_address, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
     if (result == MAP_FAILED) {
@@ -78,16 +70,16 @@ int mapping_all_loadable_segments(t_bin *bin) {
     }
     init_memory((void *)address, segment, bin);
   }
-  for (program_header_list_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
-    if (segment->program_header.p_type != PT_LOAD)
+  for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
+    if (segment->p_type != PT_LOAD)
       continue;
-    uint64_t address = segment->program_header.p_vaddr + BASE_ADDRESS;
-    uint64_t allign_address = align_address(address, segment->program_header.p_align);
+    uint64_t address = segment->p_vaddr + BASE_ADDRESS;
+    uint64_t allign_address = align_address(address, segment->p_align);
     uint64_t padding = address - allign_address;
-    size_t len = segment->program_header.p_memsz + padding;
-    if (len < segment->program_header.p_align)
-      len = segment->program_header.p_align;
-    setup_permission(&segment->program_header, allign_address, len);
+    size_t len = segment->p_memsz + padding;
+    if (len < segment->p_align)
+      len = segment->p_align;
+    setup_permission(segment, allign_address, len);
     printf("\n");
   }
   return 0;
@@ -105,18 +97,28 @@ int second_stage(t_bin *bin) {
   printf("Jumping to entry point\n");
   fflush(stdout);
   cleanup(bin);
-  ((void (*)(void)) addres_entry)();
-  return 0;
+  pid_t pid = fork();
+  if (pid == -1) {
+    perror("fork");
+    return 1;
+  }
+  if (pid == 0) {
+    ((void (*)(void)) addres_entry)();
+    return 0;
+  } else {
+    int status;
+    waitpid(pid, &status, 0);
+    return status;
+  }
 }
 
 int main(int ac, char **av) {
-  t_bin bin;
+  t_bin bin = {};
 
   if (ac != 2) {
     printf("Wrong usage\n");
     return 1;
   }
-  memset(&bin, 0, sizeof(bin));
   int file = open(av[1], O_RDONLY);
   if (file == -1) {
     printf("Error opening file\n");
@@ -136,24 +138,21 @@ int main(int ac, char **av) {
     printf("This is not an ELF file\n");
     return 4;
   }
-//  print_elf_header(&bin.header);
-  parse_program_headers(&bin);
-//  parse_section_headers(&bin);)
+  print_elf_header(&bin.header);
+  if (parse_program_headers(&bin)) {
+    printf("Error parsing program headers\n");
+    return 5;
+  }
+  if (parse_dynamic_segment(&bin)) {
+    printf("Error parsing dynamic segment\n");
+    return 6;
+  }
 //  printf("PRINTING DATA OF ALL PROGRAM HEADERS\n");
 //  print_program_headers(bin.program_headers);
-//  for (program_header_list_t *tmp = bin.program_headers; tmp != NULL; tmp = tmp->next) {
-//    if (tmp->program_header.p_type != PT_LOAD) {
-//    continue;
-//    }
-//    void *address = bin.raw_data + tmp->program_header.p_offset;
-//    printf("ASCII DUMP:\n");
-//    asciidump(address, tmp->program_header.p_filesz, 0);
-//    printf("HEX DUMP:\n");
-//    hexdump(address, tmp->program_header.p_filesz, 0);
-//    printf("\n");
+  printf("PRINTING DATA OF ALL DYNAMIC SEGMENTS\n");
+  print_dynamic_segments(bin.dynamic_segment);
+//  if (second_stage(&bin)) {
+//    printf("Error in second stage\n");
 //  }
-  if (second_stage(&bin)) {
-    printf("Error in second stage\n");
-  }
   return 0;
 }
