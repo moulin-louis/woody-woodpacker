@@ -73,8 +73,10 @@ void init_segments(t_bin *bin) {
     if (segment->p_type != PT_LOAD) {
       continue;
     }
-    printf("address = %p\n", (void *) segment->p_vaddr);
-    init_memory((void *) segment->p_vaddr + base_address, segment, bin);
+    uint64_t address = segment->p_vaddr + base_address;
+    printf("address = %p\n", (void *) address);
+    hangup();
+    init_memory((void *) address, segment, bin);
   }
 }
 
