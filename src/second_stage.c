@@ -4,6 +4,18 @@
 
 #include "woody.h"
 
+void calculate_address_n_len(segment_header_t *segment,uint64_t *address, uint64_t *allignAddress, size_t *len) {
+  *address = segment->p_vaddr + base_address;
+  *allignAddress = ALIGN(*address, segment->p_align);
+  *len = segment->p_memsz;
+    if (*address + *len == *allignAddress) {
+      *allignAddress -= segment->p_align;
+    }
+    *len = ALIGN(*len, segment->p_align);
+    if (*len == 0)
+      *len += segment->p_align;
+}
+
 int setup_permission(segment_header_t *program_header, uint64_t address, size_t len) {
   int protection = PROT_NONE;
   printf("setup permission: ");
@@ -34,15 +46,10 @@ int setup_permission_segments(t_bin *bin) {
   for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
     if (segment->p_type != PT_LOAD)
       continue;
-    uint64_t address = segment->p_vaddr + base_address;
-    uint64_t allignAddress = ALIGN(address, segment->p_align);
-    uint64_t padding = address - allignAddress;
-    size_t len = segment->p_memsz + padding;
-    if (allignAddress > address) {
-      allignAddress -= segment->p_align;
-    }
-    if (len < segment->p_align)
-      len = segment->p_align;
+    uint64_t address = 0;
+    uint64_t allignAddress = 0;
+    size_t len = 0;
+    calculate_address_n_len(segment, &address, &allignAddress, &len);
     if (setup_permission(segment, allignAddress, len))
       return 1;
     printf("\n");
@@ -85,19 +92,16 @@ int mapping_all_segment(t_bin *bin) {
     if (segment->p_type != PT_LOAD) {
       continue;
     }
-    uint64_t address = segment->p_vaddr + base_address;
-    uint64_t allignAddress = ALIGN(address, segment->p_align);
-    uint64_t padding = allignAddress - address;
-    size_t len = segment->p_memsz + padding;
-    if (len < segment->p_align)
-      len = segment->p_align;
-    // if (allignAddress > address) {
-      // allignAddress -= segment->p_align;
-    // }
+    uint64_t address = 0;
+    uint64_t allignAddress = 0;
+    size_t len = 0;
+    calculate_address_n_len(segment, &address, &allignAddress, &len);
     void *result = mmap((void *) allignAddress, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
     printf("address = %p\n", (void *) address);
     printf("allignAddress = %p\n", (void *) allignAddress);
     printf("len = %lu\n", len);
+    printf("memss = %lu\n", segment->p_memsz);
+    printf("\n");
     if (result == MAP_FAILED) {
       perror("mmap");
       return 1;
@@ -108,7 +112,7 @@ int mapping_all_segment(t_bin *bin) {
 
 int second_stage(t_bin *bin) {
   printf("pid = %d\n", getpid());
-  printf("mapping all loadable segments\n");
+  printf("mapping all loadable segments\n\n");
   if (mapping_all_segment(bin)) {
     printf("Error mapping segment\n");
     return 1;

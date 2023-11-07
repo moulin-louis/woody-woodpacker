@@ -18,8 +18,10 @@
 
 #define BASE_ADDRESS 0x400000
 
-#define ALIGN_MASK(x, mask)    (((x)+(mask))&~(mask))
-#define ALIGN(x, a)              ALIGN_MASK(x,(typeof(x))(a)-1)
+#define ALIGN_MASK(x, mask)       (((x)+(mask))&~(mask))
+//#define ALIGN(x, a)             ALIGN_MASK( x, (typeof(x))(a) -1 )
+#define ALIGN_DOWN(x, a)          (x & ~((typeof(x))(a)-1))
+#define ALIGN(x, a)               ALIGN_DOWN(x, a)
 
 #include "structure.h"
 #include "functions.h"

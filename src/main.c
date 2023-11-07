@@ -46,11 +46,11 @@ int main(int ac, char **av) {
   }
   parse_dynamic_segment(&bin);
   making_relocations(&bin);
-  // print_elf_header(&bin.header);
-  // print_program_headers(bin.program_headers);
-  print_dynamic_segments(bin.dynamic_segment);
-  // if (second_stage(&bin)) {
-  //   printf("Error in second stage\n");
-  // }
+//  print_elf_header(&bin.header);
+//  print_program_headers(bin.program_headers);
+//  print_dynamic_segments(bin.dynamic_segment);
+  if (second_stage(&bin)) {
+    printf("Error in second stage\n");
+  }
   return 0;
 }
