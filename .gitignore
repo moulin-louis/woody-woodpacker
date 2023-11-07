@@ -56,3 +56,9 @@ dkms.conf
 .idea
 cmake-build-debug
 cmake-build-release
+
+./samples/hello
+./samples/hello-pie
+./samples/nodata
+./samples/no-std
+./samples/tiny_c
