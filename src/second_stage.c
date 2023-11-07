@@ -75,7 +75,7 @@ void init_segments(t_bin *bin) {
     }
     uint64_t address = segment->p_vaddr + base_address;
     printf("address = %p\n", (void *) address);
-    hangup();
+    // hangup();
     init_memory((void *) address, segment, bin);
   }
 }
@@ -91,12 +91,15 @@ int mapping_all_segment(t_bin *bin) {
     size_t len = segment->p_memsz + padding;
     if (len < segment->p_align)
       len = segment->p_align;
+    // if (allignAddress > address) {
+      // allignAddress -= segment->p_align;
+    // }
     void *result = mmap((void *) allignAddress, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+    printf("address = %p\n", (void *) address);
+    printf("allignAddress = %p\n", (void *) allignAddress);
+    printf("len = %lu\n", len);
     if (result == MAP_FAILED) {
       perror("mmap");
-      printf("address = %p\n", (void *) address);
-      printf("allignAddress = %p\n", (void *) allignAddress);
-      printf("len = %lu\n", len);
       return 1;
     }
   }
@@ -110,6 +113,7 @@ int second_stage(t_bin *bin) {
     printf("Error mapping segment\n");
     return 1;
   }
+  // hangup();
   init_segments(bin);
   if (setup_permission_segments(bin)) {
     printf("Error setting up permission\n");

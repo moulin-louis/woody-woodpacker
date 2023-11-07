@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 project(woody_woodpacker C)
 
 SET (CMAKE_C_COMPILER "/usr/bin/gcc")
