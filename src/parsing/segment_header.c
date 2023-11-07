@@ -19,7 +19,7 @@ void lst_add_back_program_header(t_bin *bin, segment_header_t **head, segment_he
 }
 
 int parse_program_headers(t_bin *bin) {
-  size_t curr_offset = bin  ->header.e_phoff;
+  size_t curr_offset = bin->header.e_phoff;
 
   if (SIZE_OF_PROGRAM_HEADER != bin->header.e_phentsize) {
     printf("ERROR: Wrong size of program header\n");
@@ -34,7 +34,7 @@ int parse_program_headers(t_bin *bin) {
   return 0;
 }
 
-void print_program_headers(segment_header_t *head) {
+__attribute__((unused)) void print_program_headers(segment_header_t *head) {
   printf("\nPARSING AND PRINTING ALL PROGRAM HEADERS\n\n");
   for (segment_header_t *tmp = head; tmp != NULL; tmp = tmp->next) {
     if (tmp->p_type != PT_LOAD)
@@ -43,15 +43,18 @@ void print_program_headers(segment_header_t *head) {
     printf("\n");
   }
 }
+
 void print_program_header(segment_header_t *programHeader) {
   printf("Type: 0x%08x - ", programHeader->p_type);
   printf("%s\n", type_program_to_str(programHeader->p_type));
   printf("Flags: 0x%08x - ", programHeader->p_flags);
   if (programHeader->p_flags & (1 << 2)) {
     printf("PF_R ");
-  } if (programHeader->p_flags & (1 << 1)) {
+  }
+  if (programHeader->p_flags & (1 << 1)) {
     printf("PF_W ");
-  } if (programHeader->p_flags & (1 << 0)) {
+  }
+  if (programHeader->p_flags & (1 << 0)) {
     printf("PF_X ");
   }
   printf("\n");

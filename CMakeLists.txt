@@ -12,4 +12,5 @@ add_executable(woody_woodpacker
         src/parsing/segment_header.c
         src/parsing/dynamic_segment.c
         src/relocations.c
+        src/second_stage.c
 )

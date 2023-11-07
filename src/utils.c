@@ -65,7 +65,7 @@ int read_file(int file, char **result, size_t *len) {
     }
     char *new_result = realloc(*result, *len + retval); // Check realloc return value
     if (new_result == NULL) {
-      free((void *)result); // Free previously allocated memory
+      free((void *) result); // Free previously allocated memory
       return 4; // Return a different error code
     }
     *result = new_result;
@@ -121,45 +121,45 @@ __attribute__((unused)) void print_elf_header(elf_header_t *header) {
 char *type_program_to_str(typeProgram type_program) {
   switch (type_program) {
     case PT_NULL:
-      return("PT_NULL");
+      return ("PT_NULL");
     case PT_LOAD:
-      return("PT_LOAD");
+      return ("PT_LOAD");
     case PT_DYNAMIC:
-      return("PT_DYNAMIC");
+      return ("PT_DYNAMIC");
     case PT_INTERP:
-      return("PT_INTERP");
+      return ("PT_INTERP");
     case PT_NOTE:
-      return("PT_NOTE");
+      return ("PT_NOTE");
     case PT_SHLIB:
-      return("PT_SHLIB");
+      return ("PT_SHLIB");
     case PT_PHDR:
-      return("PT_PHDR");
+      return ("PT_PHDR");
     case PT_TLS:
-      return("PT_TLS");
+      return ("PT_TLS");
     case PT_NUM:
-      return("PT_NUM");
+      return ("PT_NUM");
     case PT_LOOS:
-      return("PT_LOOS");
+      return ("PT_LOOS");
     case PT_GNU_EH_FRAME:
-      return("PT_GNU_EH_FRAME");
+      return ("PT_GNU_EH_FRAME");
     case PT_GNU_STACK:
-      return("PT_GNU_STACK");
+      return ("PT_GNU_STACK");
     case PT_GNU_RELRO:
-      return("PT_GNU_RELRO");
+      return ("PT_GNU_RELRO");
     case PT_LOSUNW:
-      return("PT_LOSUNW");
+      return ("PT_LOSUNW");
     case PT_SUNWSTACK:
-      return("PT_SUNWSTACK");
+      return ("PT_SUNWSTACK");
     case PT_HIOS:
-      return("PT_HIOS");
+      return ("PT_HIOS");
     case PT_LOPROC:
-      return("PT_LOPROC");
+      return ("PT_LOPROC");
     case PT_HIPROC:
-      return("PT_HIPROC");
+      return ("PT_HIPROC");
     case PT_GNU_PROPERTY:
-      return("PT_GNU_PROPERTY");
+      return ("PT_GNU_PROPERTY");
     default:
-      return("Unknown");
+      return ("Unknown");
   }
 }
 
@@ -236,7 +236,7 @@ char *type_dynamic_to_str(typeDynamic tag) {
 __attribute__((unused)) void hangup(void) {
   char buf[1];
   ssize_t retval = read(1, buf, 1);
-  (void)retval;
+  (void) retval;
 }
 
 segment_header_t *search_segment_type(t_bin *bin, typeProgram type_program) {
@@ -257,6 +257,15 @@ segment_dyn_t *search_segment_dyn_type(t_bin *bin, typeDynamic type_dynamic) {
   return NULL;
 }
 
+void cleanup2(t_bin *bin) {
+  segment_dyn_t *tmp_dyn = bin->dynamic_segment;
+  while (tmp_dyn) {
+    segment_dyn_t *next = tmp_dyn->next;
+    free(tmp_dyn);
+    tmp_dyn = next;
+  }
+}
+
 void cleanup(t_bin *bin) {
   //clean program header list
   segment_header_t *tmp_segment = bin->program_headers;
@@ -266,11 +275,6 @@ void cleanup(t_bin *bin) {
     tmp_segment = next;
   }
   //clean dynamic segment list
-  segment_dyn_t *tmp_dyn = bin->dynamic_segment;
-  while (tmp_dyn) {
-    segment_dyn_t *next = tmp_dyn->next;
-    free(tmp_dyn);
-    tmp_dyn = next;
-  }
+  cleanup2(bin);
   free(bin->raw_data);
 }

@@ -10,7 +10,7 @@ void print_dynamic_segment(segment_dyn_t *segment) {
   printf("Value/Pointer: 0x%016lx\n", segment->d_val);
 }
 
-void print_dynamic_segments(segment_dyn_t *head) {
+__attribute__((unused)) __attribute__((unused)) void print_dynamic_segments(segment_dyn_t *head) {
   printf("\nPARSING AND PRINTING ALL DYNAMIC SEGMENTS\n\n");
   for (segment_dyn_t *tmp = head; tmp != NULL; tmp = tmp->next) {
     print_dynamic_segment(tmp);
@@ -40,21 +40,20 @@ void lst_add_back_segment_dyn(t_bin *bin, segment_dyn_t **head, segment_dyn_t *d
   memcpy(tmp->next, data, SIZE_OF_DYNAMIC_SEGMENT);
 }
 
-int parse_dynamic_segment(t_bin *bin) {
+void parse_dynamic_segment(t_bin *bin) {
   segment_header_t *segment = search_dyn_segment(bin);
   if (segment == NULL) {
     printf("WARN: No dynamic segment found\n");
-    return 0;
+    return;
   }
   size_t curr_offset = segment->p_offset;
   for (uint idx = 0; idx < segment->p_filesz; idx += SIZE_OF_DYNAMIC_SEGMENT) {
     segment_dyn_t tmp = {0};
-    memcpy(&tmp, bin->raw_data + curr_offset,SIZE_OF_DYNAMIC_SEGMENT);
+    memcpy(&tmp, bin->raw_data + curr_offset, SIZE_OF_DYNAMIC_SEGMENT);
     if (tmp.d_tag == DT_NULL) {
       break;
     }
     lst_add_back_segment_dyn(bin, &bin->dynamic_segment, &tmp);
     curr_offset += SIZE_OF_DYNAMIC_SEGMENT;
   }
-  return 0;
 }
