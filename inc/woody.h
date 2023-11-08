@@ -15,15 +15,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <elf.h>
 
 #define BASE_ADDRESS 0x400000
 
-#define ALIGN_MASK(x, mask)       (((x)+(mask))&~(mask))
-//#define ALIGN(x, a)             ALIGN_MASK( x, (typeof(x))(a) -1 )
-#define ALIGN_DOWN(x, a)          (x & ~((typeof(x))(a)-1))
-#define ALIGN(x, a)               ALIGN_DOWN(x, a)
+typedef struct phdr_s {
+  Elf64_Phdr program_header;
+  struct phdr_s *next;
+} phdr_list_t;
 
-#include "structure.h"
+typedef struct {
+  uint8_t *raw_data;
+  size_t data_len;
+  Elf64_Ehdr elf_header;
+  phdr_list_t *phdrs;
+} t_bin;
+
 #include "functions.h"
 
 extern uint64_t base_address;

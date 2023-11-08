@@ -75,10 +75,10 @@ int read_file(int file, char **result, size_t *len) {
   return 0;
 }
 
-__attribute__((unused)) void print_elf_header(elf_header_t *header) {
-  printf("Magic: %02x %02x %02x %02x\n", header->magic[0], header->magic[1], header->magic[2], header->magic[3]);
-  printf("Class: 0x%02x - ", header->class);
-  switch (header->class) {
+__attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
+  printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2], header->e_ident[3]);
+  printf("Class: 0x%02x - ", header->e_ident[EI_CLASS]);
+      switch (header->e_ident[EI_CLASS]) {
     case 0x1:
       printf("32-bits\n");
       break;
@@ -89,8 +89,8 @@ __attribute__((unused)) void print_elf_header(elf_header_t *header) {
       printf("Invalid\n");
       break;
   }
-  printf("Endian: 0x%02x - ", header->endian);
-  switch (header->endian) {
+  printf("Endian: 0x%02x - ", header->e_ident[EI_DATA]);
+  switch (header->e_ident[EI_DATA]) {
     case 0x1:
       printf("little endianness\n");
       break;
@@ -101,8 +101,8 @@ __attribute__((unused)) void print_elf_header(elf_header_t *header) {
       printf("Invalid\n");
       break;
   }
-  printf("Version: 0x%02x\n", header->version);
-  printf("OS ABI: 0x%02x\n", header->os_abi);
+  printf("Version: 0x%02x\n", header->e_version);
+  printf("OS ABI: 0x%02x\n", header->e_ident[EI_OSABI]);
   printf("Type: 0x%04x\n", header->e_type);
   printf("Machine: 0x%04x\n", header->e_machine);
   printf("Version: 0x%08x\n", header->e_version);
@@ -118,163 +118,17 @@ __attribute__((unused)) void print_elf_header(elf_header_t *header) {
   printf("Section index names: 0x%04x\n", header->e_shstrndx);
 }
 
-char *type_program_to_str(typeProgram type_program) {
-  switch (type_program) {
-    case PT_NULL:
-      return ("PT_NULL");
-    case PT_LOAD:
-      return ("PT_LOAD");
-    case PT_DYNAMIC:
-      return ("PT_DYNAMIC");
-    case PT_INTERP:
-      return ("PT_INTERP");
-    case PT_NOTE:
-      return ("PT_NOTE");
-    case PT_SHLIB:
-      return ("PT_SHLIB");
-    case PT_PHDR:
-      return ("PT_PHDR");
-    case PT_TLS:
-      return ("PT_TLS");
-    case PT_NUM:
-      return ("PT_NUM");
-    case PT_LOOS:
-      return ("PT_LOOS");
-    case PT_GNU_EH_FRAME:
-      return ("PT_GNU_EH_FRAME");
-    case PT_GNU_STACK:
-      return ("PT_GNU_STACK");
-    case PT_GNU_RELRO:
-      return ("PT_GNU_RELRO");
-    case PT_LOSUNW:
-      return ("PT_LOSUNW");
-    case PT_SUNWSTACK:
-      return ("PT_SUNWSTACK");
-    case PT_HIOS:
-      return ("PT_HIOS");
-    case PT_LOPROC:
-      return ("PT_LOPROC");
-    case PT_HIPROC:
-      return ("PT_HIPROC");
-    case PT_GNU_PROPERTY:
-      return ("PT_GNU_PROPERTY");
-    default:
-      return ("Unknown");
-  }
-}
-
-char *type_dynamic_to_str(typeDynamic tag) {
-  switch (tag) {
-    case DT_NULL:
-      return ("DT_NULL");
-    case DT_NEEDED:
-      return ("DT_NEEDED");
-    case DT_PLTRELSZ:
-      return ("DT_PLTRELSZ");
-    case DT_PLTGOT:
-      return ("DT_PLTGOT");
-    case DT_HASH:
-      return ("DT_HASH");
-    case DT_STRTAB:
-      return ("DT_STRTAB");
-    case DT_SYMTAB:
-      return ("DT_SYMTAB");
-    case DT_RELA:
-      return ("DT_RELA");
-    case DT_RELASZ:
-      return ("DT_RELASZ");
-    case DT_RELAENT:
-      return ("DT_RELAENT");
-    case DT_STRSZ:
-      return ("DT_STRSZ");
-    case DT_SYMENT:
-      return ("DT_SYMENT");
-    case DT_INIT:
-      return ("DT_INIT");
-    case DT_FINI:
-      return ("DT_FINI");
-    case DT_SONAME:
-      return ("DT_SONAME");
-    case DT_RPATH:
-      return ("DT_RPATH");
-    case DT_SYMBOLIC:
-      return ("DT_SYMBOLIC");
-    case DT_REL:
-      return ("DT_REL");
-    case DT_RELSZ:
-      return ("DT_RELSZ");
-    case DT_RELENT:
-      return ("DT_RELENT");
-    case DT_PLTREL:
-      return ("DT_PLTREL");
-    case DT_DEBUG:
-      return ("DT_DEBUG");
-    case DT_TEXTREL:
-      return ("DT_TEXTREL");
-    case DT_JMPREL:
-      return ("DT_JMPREL");
-    case DT_BIND_NOW:
-      return ("DT_BIND_NOW");
-    case DT_INIT_ARRAY:
-      return ("DT_INIT_ARRAY");
-    case DT_FINI_ARRAY:
-      return ("DT_FINI_ARRAY");
-    case DT_INIT_ARRAYSZ:
-      return ("DT_INIT_ARRAYSZ");
-    case DT_FLAGS:
-      return ("DT_FLAGS");
-    case DT_GNUHASH:
-      return ("DT_GNUHASH");
-    case DT_FLAGS1:
-      return ("DT_FLAGS1");
-    case DT_RELACOUNT:
-      return ("DT_RELACOUNT");
-  }
-  return ("Unknown");
-}
-
 __attribute__((unused)) void hangup(void) {
   char buf[1];
   ssize_t retval = read(1, buf, 1);
   (void) retval;
 }
 
-segment_header_t *search_segment_type(t_bin *bin, typeProgram type_program) {
-  for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
-    if (segment->p_type == type_program) {
-      return segment;
-    }
-  }
-  return NULL;
+uint64_t allign_down(uint64_t x, uint64_t align) {
+  return (x) & ~(align - 1);
 }
 
-segment_dyn_t *search_segment_dyn_type(t_bin *bin, typeDynamic type_dynamic) {
-  for (segment_dyn_t *segment = bin->dynamic_segment; segment != NULL; segment = segment->next) {
-    if (segment->d_tag == type_dynamic) {
-      return segment;
-    }
-  }
-  return NULL;
-}
-
-void cleanup2(t_bin *bin) {
-  segment_dyn_t *tmp_dyn = bin->dynamic_segment;
-  while (tmp_dyn) {
-    segment_dyn_t *next = tmp_dyn->next;
-    free(tmp_dyn);
-    tmp_dyn = next;
-  }
-}
-
-void cleanup(t_bin *bin) {
-  //clean program header list
-  segment_header_t *tmp_segment = bin->program_headers;
-  while (tmp_segment) {
-    segment_header_t *next = tmp_segment->next;
-    free(tmp_segment);
-    tmp_segment = next;
-  }
-  //clean dynamic segment list
-  cleanup2(bin);
-  free(bin->raw_data);
+uint64_t allign_up(uint64_t x, uint64_t align) {
+  uint64_t result = allign_down(x + align -1, align);
+  return result ? result : align;
 }

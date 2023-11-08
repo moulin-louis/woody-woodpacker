@@ -4,16 +4,13 @@
 
 #include "woody.h"
 
-void calculate_address_n_len(segment_header_t *segment,uint64_t *address, uint64_t *allignAddress, size_t *len) {
+void calculate_address_n_len(segment_header_t *segment, uint64_t *address, uint64_t *allignAddress, size_t *len, uint64_t *prevSegmentEnd) {
   *address = segment->p_vaddr + base_address;
-  *allignAddress = ALIGN(*address, segment->p_align);
-  *len = segment->p_memsz;
-    if (*address + *len == *allignAddress) {
-      *allignAddress -= segment->p_align;
-    }
-    *len = ALIGN(*len, segment->p_align);
-    if (*len == 0)
-      *len += segment->p_align;
+  *allignAddress = allign_down(*address, segment->p_align);
+  *len = allign_up(segment->p_memsz, segment->p_align);
+  if (*prevSegmentEnd && *allignAddress < *prevSegmentEnd) {
+    *allignAddress = allign_up(*prevSegmentEnd, segment->p_align);
+  }
 }
 
 int setup_permission(segment_header_t *program_header, uint64_t address, size_t len) {
@@ -43,36 +40,28 @@ int setup_permission(segment_header_t *program_header, uint64_t address, size_t 
 }
 
 int setup_permission_segments(t_bin *bin) {
+  uint64_t prevSegmentEnd = 0;
   for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
     if (segment->p_type != PT_LOAD)
       continue;
-    uint64_t address = 0;
-    uint64_t allignAddress = 0;
-    size_t len = 0;
-    calculate_address_n_len(segment, &address, &allignAddress, &len);
+    uint64_t address, allignAddress;
+    size_t len;
+    calculate_address_n_len(segment, &address, &allignAddress, &len, &prevSegmentEnd);
     if (setup_permission(segment, allignAddress, len))
       return 1;
     printf("\n");
+    prevSegmentEnd = allignAddress + len;
   }
   return 0;
 }
 
 void init_memory(void *address, segment_header_t *segment, t_bin *bin) {
-  if (segment->p_memsz == segment->p_filesz) {
-    printf("memsz == filesz\n");
+  if (segment->p_filesz > 0) {
     memcpy(address, bin->raw_data + segment->p_offset, segment->p_filesz);
-    return;
-  } else if (segment->p_memsz > segment->p_filesz) {
-    printf("memsz > filesz\n");
-    memcpy(address, bin->raw_data + segment->p_offset, segment->p_filesz);
-    memset(address + segment->p_filesz, 0, segment->p_memsz - segment->p_filesz);
-    return;
-  } else if (segment->p_memsz < segment->p_filesz) {
-    printf("memsz < filesz\n");
-    memcpy(address, bin->raw_data + segment->p_offset, segment->p_memsz);
-    return;
   }
-  memset(address, 0, segment->p_memsz);
+  if (segment->p_memsz > segment->p_filesz) {
+    memset(address + segment->p_filesz, 0, segment->p_memsz - segment->p_filesz);
+  }
 }
 
 void init_segments(t_bin *bin) {
@@ -88,6 +77,7 @@ void init_segments(t_bin *bin) {
 }
 
 int mapping_all_segment(t_bin *bin) {
+  uint64_t prevSegmentEnd = 0;
   for (segment_header_t *segment = bin->program_headers; segment != NULL; segment = segment->next) {
     if (segment->p_type != PT_LOAD) {
       continue;
@@ -95,7 +85,7 @@ int mapping_all_segment(t_bin *bin) {
     uint64_t address = 0;
     uint64_t allignAddress = 0;
     size_t len = 0;
-    calculate_address_n_len(segment, &address, &allignAddress, &len);
+    calculate_address_n_len(segment, &address, &allignAddress, &len, &prevSegmentEnd);
     void *result = mmap((void *) allignAddress, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
     printf("address = %p\n", (void *) address);
     printf("allignAddress = %p\n", (void *) allignAddress);
@@ -106,6 +96,7 @@ int mapping_all_segment(t_bin *bin) {
       perror("mmap");
       return 1;
     }
+    prevSegmentEnd = allignAddress + len;
   }
   return 0;
 }
@@ -117,7 +108,7 @@ int second_stage(t_bin *bin) {
     printf("Error mapping segment\n");
     return 1;
   }
-  // hangup();
+   hangup();
   init_segments(bin);
   if (setup_permission_segments(bin)) {
     printf("Error setting up permission\n");
