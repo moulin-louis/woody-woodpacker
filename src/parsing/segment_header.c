@@ -6,7 +6,8 @@
 
 void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
   phdr_list_t *new = malloc(sizeof(phdr_list_t));
-  memcpy(&new->program_header, phdr, sizeof(Elf64_Phdr));
+//   memcpy(&new->program_header, phdr, sizeof(Elf64_Phdr));
+  new->program_header = phdr;
   new->next = NULL;
   if (*head == NULL) {
     *head = new;
@@ -20,17 +21,17 @@ void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
 }
 
 int parse_program_headers(t_bin *bin) {
-  size_t curr_offset = bin->elf_header.e_phoff;
+  size_t curr_offset = bin->elf_header->e_phoff;
 
-  if (sizeof(Elf64_Phdr) != bin->elf_header.e_phentsize) {
+  if (sizeof(Elf64_Phdr) != bin->elf_header->e_phentsize) {
     printf("ERROR: Wrong size of program header\n");
     return 1;
   }
-  for (uint idx = 0; idx != bin->elf_header.e_phnum; idx++) {
-    Elf64_Phdr tmp = {0};
-    memcpy(&tmp, bin->raw_data + curr_offset,  sizeof(tmp));
-    curr_offset += bin->elf_header.e_phentsize;
-    push_back_phdrs(&bin->phdrs, &tmp);
+  for (uint16_t idx = 0; idx != bin->elf_header->e_phnum; idx++) {
+    // Elf64_Phdr tmp = {0};
+    // memcpy(&tmp, bin->raw_data + curr_offset,  sizeof(tmp));
+    curr_offset += bin->elf_header->e_phentsize;
+    push_back_phdrs(&bin->phdrs, (Elf64_Phdr *)(bin->raw_data + curr_offset));
   }
   return 0;
 }
@@ -72,27 +73,27 @@ char *type_program_to_str(Elf64_Word type) {
 
 __attribute__((unused)) void print_program_headers(phdr_list_t *head) {
   for (phdr_list_t *node = head; node; node = node->next) {
-    if (node->program_header.p_type != PT_LOAD) {
+    if (node->program_header->p_type != PT_LOAD) {
       continue;
     }
-    printf("Type: 0x%08x - ", node->program_header.p_type);
-    printf("%s\n", type_program_to_str(node->program_header.p_type));
-    printf("Flags: 0x%08x - ", node->program_header.p_flags);
-    if (node->program_header.p_flags & (1 << 2)) {
+    printf("Type: 0x%08x - ", node->program_header->p_type);
+    printf("%s\n", type_program_to_str(node->program_header->p_type));
+    printf("Flags: 0x%08x - ", node->program_header->p_flags);
+    if (node->program_header->p_flags & (1 << 2)) {
       printf("PF_R ");
     }
-    if (node->program_header.p_flags & (1 << 1)) {
+    if (node->program_header->p_flags & (1 << 1)) {
       printf("PF_W ");
     }
-    if (node->program_header.p_flags & (1 << 0)) {
+    if (node->program_header->p_flags & (1 << 0)) {
       printf("PF_X ");
     }
     printf("\n");
-    printf("Offset: 0x%016lx\n", node->program_header.p_offset);
-    printf("Virtual address: 0x%016lx\n", node->program_header.p_vaddr);
-    printf("Size in file: 0x%016lx\n", node->program_header.p_filesz);
-    printf("Size in memory: 0x%016lx\n", node->program_header.p_memsz);
-    printf("Alignment: 0x%016lx\n", node->program_header.p_align);
+    printf("Offset: 0x%016lx\n", node->program_header->p_offset);
+    printf("Virtual address: 0x%016lx\n", node->program_header->p_vaddr);
+    printf("Size in file: 0x%016lx\n", node->program_header->p_filesz);
+    printf("Size in memory: 0x%016lx\n", node->program_header->p_memsz);
+    printf("Alignment: 0x%016lx\n", node->program_header->p_align);
     printf("\n");
   }
 }

@@ -62,8 +62,9 @@ int main(int ac, char **av) {
     printf("Error init\n");
     return 1;
   }
-  memcpy(&bin.elf_header, bin.raw_data, sizeof(Elf64_Ehdr));
-  if (check_elf_header(&bin.elf_header)) {
+//   memcpy(&bin.elf_header, bin.raw_data, sizeof(Elf64_Ehdr));
+  bin.elf_header = (Elf64_Ehdr *)bin.raw_data;	
+  if (check_elf_header(bin.elf_header)) {
     printf("Error checking elf header\n");
     return 1;
   }

@@ -18,11 +18,11 @@ int get_key(char *key) {
   return 0;
 }
 
-const void *get_segment(const phdr_list_t *head, int (*callback)(const Elf64_Phdr *)) {
+const Elf64_Phdr *get_segment(const phdr_list_t *head, int (*callback)(const Elf64_Phdr *)) {
   const phdr_list_t *tmp = head;
   while (tmp) {
-    if (callback(&tmp->program_header))
-      return &(tmp->program_header);
+    if (callback(tmp->program_header))
+      return (tmp->program_header);
     tmp = tmp->next;
   }
   return NULL;

@@ -27,14 +27,14 @@
 #define PAYLOAD_SIZE sizeof(PAYLOAD)
 
 typedef struct phdr_s {
-  Elf64_Phdr program_header;
+  Elf64_Phdr *program_header;
   struct phdr_s *next;
 } phdr_list_t;
 
 typedef struct {
   uint8_t *raw_data;
   size_t data_len;
-  Elf64_Ehdr elf_header;
+  Elf64_Ehdr *elf_header;
   phdr_list_t *phdrs;
 } t_bin;
 
