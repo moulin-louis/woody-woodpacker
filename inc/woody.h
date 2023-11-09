@@ -19,6 +19,7 @@
 
 #define BASE_ADDRESS 0x400000
 #define KEY_SIZE 32
+#define SHELLCODE_SIZE 256
 
 typedef struct phdr_s {
   Elf64_Phdr program_header;

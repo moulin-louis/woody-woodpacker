@@ -21,4 +21,8 @@ __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header);
 
 __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row);
 
+uint64_t allign_down(uint64_t x, uint64_t align);
+
+uint64_t allign_up(uint64_t x, uint64_t align);
+
 #endif //WOODY_WOODPACKER_FUNCTIONS_H
