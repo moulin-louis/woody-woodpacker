@@ -25,4 +25,10 @@ uint64_t allign_down(uint64_t x, uint64_t align);
 
 uint64_t allign_up(uint64_t x, uint64_t align);
 
+int is_text_segment(const Elf64_Phdr *segment);
+
+const void *get_segment(const phdr_list_t *head, int (*callback)(const Elf64_Phdr *));
+
+void *find_code_cave(t_bin *bin);
+
 #endif //WOODY_WOODPACKER_FUNCTIONS_H

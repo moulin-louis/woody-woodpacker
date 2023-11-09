@@ -47,6 +47,7 @@ int save_new_file(t_bin *ptr) {
     return 1;
   }
   write(fd, ptr->raw_data, ptr->data_len);
+  close(fd);
   return 0;
 }
 
@@ -72,6 +73,7 @@ int main(int ac, char **av) {
     printf("Error encryption\n");
     return 1;
   }
+  find_code_cave(&bin);
   //prepare payload
   //inject payload
   //save new file

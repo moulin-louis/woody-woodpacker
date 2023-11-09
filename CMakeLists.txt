@@ -12,4 +12,5 @@ add_executable(woody_woodpacker
         src/utils.c
         src/parsing/segment_header.c
         src/encryption.c
+		src/find_code_cave.c
 )
