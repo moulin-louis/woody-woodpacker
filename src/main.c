@@ -16,26 +16,43 @@ int init(t_bin *bin, char **av) {
   return 0;
 }
 
-//void print_elf_header(Elf64_Ehdr *header) {
-//  printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2], header->e_ident[3]);
-//  printf("e_type: %04x\n", header->e_type);
-//  printf("e_machine: %04x\n", header->e_machine);
-//  printf("e_version: %08x\n", header->e_version);
-//  printf("e_entry: %016lx\n", header->e_entry);
-//  printf("e_phoff: %016lx\n", header->e_phoff);
-//  printf("e_shoff: %016lx\n", header->e_shoff);
-//  printf("e_flags: %08x\n", header->e_flags);
-//  printf("e_ehsize: %04x\n", header->e_ehsize);
-//  printf("e_phentsize: %04x\n", header->e_phentsize);
-//  printf("e_phnum: %04x\n", header->e_phnum);
-//  printf("e_shentsize: %04x\n", header->e_shentsize);
-//  printf("e_shnum: %04x (%d)\n", header->e_shnum, header->e_shnum);
-//}
+int check_elf_header(Elf64_Ehdr *elf64Ehdr) {
+  if (memcmp(elf64Ehdr, "\x7F" "ELF", 4) != 0) {
+    printf("This is not an ELF file\n");
+    return 1;
+  }
+  if (elf64Ehdr->e_version != 1) {
+    printf("Wrong ELF version\n");
+    return 1;
+  }
+  if (elf64Ehdr->e_ident[EI_CLASS] != ELFCLASS64) {
+    printf("Not a 64 bits ELF file\n");
+    return 1;
+  }
+  if (elf64Ehdr->e_ident[EI_DATA] != ELFDATA2LSB) {
+    printf("Not a little endian ELF file\n");
+    return 1;
+  }
+  if (elf64Ehdr->e_type != ET_EXEC && elf64Ehdr->e_type != ET_DYN) {
+    printf("Not an executable ELF file\n");
+    return 1;
+  }
+  return 0;
+}
+
+int save_new_file(t_bin *ptr) {
+  int fd = open("./woody", O_WRONLY | O_CREAT , 0777);
+  if (fd == -1) {
+    printf("Error opening file\n");
+    return 1;
+  }
+  write(fd, ptr->raw_data, ptr->data_len);
+  return 0;
+}
 
 int main(int ac, char **av) {
   t_bin bin = {};
 
-//  base_address = BASE_ADDRESS;
   if (ac != 2) {
     printf("Wrong usage\n");
     return 1;
@@ -45,28 +62,22 @@ int main(int ac, char **av) {
     return 1;
   }
   memcpy(&bin.elf_header, bin.raw_data, sizeof(Elf64_Ehdr));
-  if (memcmp((void *)&bin.elf_header, "\x7F" "ELF", 4) != 0) {
-    printf("This is not an ELF file\n");
-    return 4;
+  if (check_elf_header(&bin.elf_header)) {
+    printf("Error checking elf header\n");
+    return 1;
   }
-  print_elf_header(&bin.elf_header);
-  if (parse_program_headers(&bin)) {
-    printf("Error parsing program headers\n");
-    return 5;
+  parse_program_headers(&bin);
+  //encryption
+  if (encryption(&bin)) {
+    printf("Error encryption\n");
+    return 1;
   }
-  print_program_headers(bin.phdrs);
-  for (phdr_list_t *node = bin.phdrs; node; node = node->next) {
-    printf("HEXDUMP: \n");
-    hexdump(bin.raw_data + node->program_header.p_offset, node->program_header.p_filesz, 16);
+  //prepare payload
+  //inject payload
+  //save new file
+  if (save_new_file(&bin)) {
+    printf("Error saving new file\n");
+    return 1;
   }
-//  parse_dynamic_segment(&bin);
-//  making_relocations(&bin);
-//  print_elf_header(&bin.header);
-//  print_program_headers(bin.program_header);
-//  print_dynamic_segments(bin.dynamic_segment);
-//  if (second_stage(&bin)) {
-//    printf("Error in second stage\n");
-//  }
-//  patch_elf(&bin);
   return 0;
 }

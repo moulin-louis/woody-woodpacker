@@ -4,6 +4,37 @@
 
 #include "woody.h"
 
+void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
+  phdr_list_t *new = malloc(sizeof(phdr_list_t));
+  memcpy(&new->program_header, phdr, sizeof(Elf64_Phdr));
+  new->next = NULL;
+  if (*head == NULL) {
+    *head = new;
+    return;
+  }
+  phdr_list_t *tmp = *head;
+  while (tmp->next != NULL) {
+    tmp = tmp->next;
+  }
+  tmp->next = new;
+}
+
+int parse_program_headers(t_bin *bin) {
+  size_t curr_offset = bin->elf_header.e_phoff;
+
+  if (sizeof(Elf64_Phdr) != bin->elf_header.e_phentsize) {
+    printf("ERROR: Wrong size of program header\n");
+    return 1;
+  }
+  for (uint idx = 0; idx != bin->elf_header.e_phnum; idx++) {
+    Elf64_Phdr tmp = {0};
+    memcpy(&tmp, bin->raw_data + curr_offset,  sizeof(tmp));
+    curr_offset += bin->elf_header.e_phentsize;
+    push_back_phdrs(&bin->phdrs, &tmp);
+  }
+  return 0;
+}
+
 char *type_program_to_str(Elf64_Word type) {
   switch (type) {
     case PT_NULL:
@@ -39,40 +70,11 @@ char *type_program_to_str(Elf64_Word type) {
   }
 }
 
-void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
-  phdr_list_t *new = malloc(sizeof(phdr_list_t));
-  memcpy(&new->program_header, phdr, sizeof(Elf64_Phdr));
-  new->next = NULL;
-  if (*head == NULL) {
-    *head = new;
-    return;
-  }
-  phdr_list_t *tmp = *head;
-  while (tmp->next != NULL) {
-    tmp = tmp->next;
-  }
-  tmp->next = new;
-}
-
-int parse_program_headers(t_bin *bin) {
-  size_t curr_offset = bin->elf_header.e_phoff;
-
-  if (sizeof(Elf64_Phdr) != bin->elf_header.e_phentsize) {
-    printf("ERROR: Wrong size of program header\n");
-    return 1;
-  }
-  for (uint idx = 0; idx != bin->elf_header.e_phnum; idx++) {
-    Elf64_Phdr tmp = {0};
-    memcpy(&tmp, bin->raw_data + curr_offset,  sizeof(tmp));
-    curr_offset += bin->elf_header.e_phentsize;
-    push_back_phdrs(&bin->phdrs, &tmp);
-  }
-  return 0;
-}
-
 __attribute__((unused)) void print_program_headers(phdr_list_t *head) {
   for (phdr_list_t *node = head; node; node = node->next) {
-
+    if (node->program_header.p_type != PT_LOAD) {
+      continue;
+    }
     printf("Type: 0x%08x - ", node->program_header.p_type);
     printf("%s\n", type_program_to_str(node->program_header.p_type));
     printf("Flags: 0x%08x - ", node->program_header.p_flags);

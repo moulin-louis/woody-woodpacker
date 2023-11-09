@@ -18,6 +18,7 @@
 #include <elf.h>
 
 #define BASE_ADDRESS 0x400000
+#define KEY_SIZE 32
 
 typedef struct phdr_s {
   Elf64_Phdr program_header;
