@@ -7,9 +7,11 @@ _start:
     lea rsi, [rel woody] ; load buff
     mov rdx, 14 ; load len of 13
 	syscall ; call syscall loaded in rax
-    lea rsi, [rel woody]     ; load key (replace 0x1 during execution of woody)
-    mov rdi, 0x1 ; load key_len (replace 0x1 during execution of woody)
-    lea rdx, [rel woody] ; load data (replace 0x1 during execution of woody)
+    lea rdi, 0xffffffffffffffff ; load key (replace 0x1 during execution of woody)
+    mov rsi, 0x1 ; load key_len (replace 0x1 during execution of woody)
+    mov rdx, 0xffffffffffffffff ; load data (replace 0x1 during execution of woody)
     mov rcx, 0x1 ; load data_len (replace 0x1 during execution of woody)
+    lea r8, [rel after_decrypt]
     jmp 0x1 ; jump to decrypt function (replace 0x1 during execution of woody)
+after_decrypt:
     jmp 0x1 ; jump to OG entry point (replace 0x1 during execution of woody)

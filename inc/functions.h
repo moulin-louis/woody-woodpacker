@@ -44,4 +44,6 @@ uint32_t get_uint32(uint8_t *data, uint8_t endian);
 
 uint64_t get_uint64(uint8_t *data, uint8_t endian);
 
+__attribute__((unused)) void print_info_payload(t_bin *bin);
+
 #endif //WOODY_WOODPACKER_FUNCTIONS_H

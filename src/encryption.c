@@ -4,9 +4,10 @@
 
 #include "woody.h"
 
-void xor_encrypt(void *data, size_t len, const uint8_t *key) {
-  for (size_t i = 0; i < len; i++)
-    ((char *) data)[i] ^= key[i % KEY_SIZE];
+//void xor_encrypt(void *data, size_t len, const uint8_t *key, size_t len_key) {
+void xor_encrypt(uint8_t *key, size_t len_key, void *data, size_t len_data) {
+  for (size_t i = 0; i < len_data; i++)
+    ((char *) data)[i] ^= key[i % len_key];
 }
 
 int encryption(t_bin *bin) {
@@ -25,7 +26,6 @@ int encryption(t_bin *bin) {
   hexdump(bin->key, bin->len_key, 0);
   //encrypt text segment
   void *data = bin->raw_data + text_segment->p_offset;
-  memcpy(data, bin->raw_data + text_segment->p_offset, text_segment->p_filesz);
-  xor_encrypt(data, text_segment->p_filesz, bin->key);
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
   return 0;
 }
