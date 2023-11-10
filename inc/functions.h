@@ -30,8 +30,18 @@ void *get_segment(const phdr_list_t *head, int (*callback)(const void *));
 
 void *find_code_cave(t_bin *bin);
 
-int get_key(char *key);
+int get_key(uint8_t *key);
 
 int save_new_file(t_bin *ptr);
+
+int craft_payload(t_bin *bin);
+
+uint8_t get_uint8(uint8_t *data, uint8_t endian);
+
+uint16_t get_uint16(uint8_t *data, uint8_t endian);
+
+uint32_t get_uint32(uint8_t *data, uint8_t endian);
+
+uint64_t get_uint64(uint8_t *data, uint8_t endian);
 
 #endif //WOODY_WOODPACKER_FUNCTIONS_H

@@ -1,5 +1,7 @@
 #include "woody.h"
 
+
+
 int init(t_bin *bin, char **av) {
   int file = open(av[1], O_RDONLY);
   if (file == -1) {
@@ -62,6 +64,10 @@ int main(int ac, char **av) {
     return 1;
   }
   //prepare payload
+  if (craft_payload(&bin)) {
+    printf("Error crafting payload\n");
+    return 1;
+  }
   //inject payload
   find_code_cave(&bin);
   //save new file

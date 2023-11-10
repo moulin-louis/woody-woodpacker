@@ -7,9 +7,9 @@
 __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
   if (row == 0) {
     for (size_t i = 0; i < len; i++) {
-      dprintf(1, "%02x ", ((uint8_t *) data)[i]);
+      printf( "%02x ", ((uint8_t *) data)[i]);
     }
-    dprintf(1, "\n");
+    printf( "\n");
     return;
   }
   for (size_t i = 0; i < len; i += row) {
@@ -17,11 +17,11 @@ __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
       if (j == len) {
         break;
       }
-      dprintf(1, "%02x ", ((uint8_t *) data)[j]);
+      printf( "%02x ", ((uint8_t *) data)[j]);
     }
-    dprintf(1, "\n");
+    printf( "\n");
   }
-  dprintf(1, "\n");
+  printf( "\n");
 }
 
 __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {

@@ -4,7 +4,7 @@
 
 #include "woody.h"
 
-void xor_encrypt(void *data, size_t len, const char *key) {
+void xor_encrypt(void *data, size_t len, const uint8_t *key) {
   for (size_t i = 0; i < len; i++)
     ((char *) data)[i] ^= key[i % KEY_SIZE];
 }
@@ -18,15 +18,18 @@ int encryption(t_bin *bin) {
     return 1;
   }
   //get key from urandom
-  char key[KEY_SIZE] = {0};
-  if (get_key(key)) {
+  bin->key = calloc(1, KEY_SIZE);
+  bin->len_key = KEY_SIZE;
+  if (get_key(bin->key)) {
     dprintf(2, "Failed to get key\n");
     return 1;
   }
-  printf("key = 0x%lx\n", *(uint64_t *) key);
+  //print key in hexa
+  printf("key: ");
+  hexdump(bin->key, bin->len_key, 0);
   //encrypt text segment
   void *data = bin->raw_data + text_segment->p_offset;
   memcpy(data, bin->raw_data + text_segment->p_offset, text_segment->p_filesz);
-  xor_encrypt(data, text_segment->p_filesz, key);
+  xor_encrypt(data, text_segment->p_filesz, bin->key);
   return 0;
 }

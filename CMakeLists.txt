@@ -14,4 +14,6 @@ add_executable(woody_woodpacker
 		src/segment.c
 		src/file_io.c
 		src/debug_utils.c
+		src/payload.c
+		src/endian_handle.c
 )

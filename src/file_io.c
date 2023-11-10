@@ -38,7 +38,7 @@ int read_file(int file, char **result, size_t *len) {
   return 0;
 }
 
-int get_key(char *key) {
+int get_key(uint8_t *key) {
   int fd = open("/dev/urandom", O_RDONLY);
   if (fd == -1) {
     dprintf(2, "Failed to open /dev/urandom\n");
