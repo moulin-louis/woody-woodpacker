@@ -33,6 +33,7 @@ int	modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
 			seg_h->program_header->p_vaddr += resize_needed;
 		}
 	}
+	return 0;
 }
 
 int resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
@@ -58,7 +59,7 @@ void *find_code_cave(t_bin *bin) {
     resize_needed *= 2;
     printf("resize needed: %lu\n", resize_needed);
     printf("Cave too small\n");
-	resize_needed = allign_up(resize_needed, 4096);
+	resize_needed = ALIGN_UP(resize_needed, 4096);
     if (resize_file(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz, resize_needed)) {
       printf("Error while resizing file\n");
       return NULL;
