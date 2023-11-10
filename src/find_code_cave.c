@@ -70,7 +70,13 @@ void *find_code_cave(t_bin *bin) {
   printf("txt segment offset = %#lx\n", txt_segment_h->p_offset);
   printf("txt mensz = %#lx\n", txt_segment_h->p_memsz);
   printf("adding thsi to e entry = %#lx\n", -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz);
-  header->e_entry += -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
+  u_int64_t neg_offset = ~txt_segment_h->p_offset;
+  printf ("neg offset: %lx\n", neg_offset);
+  u_int64_t entry_offset = header->e_entry & neg_offset;
+  printf ("entry offset: %lx\n", entry_offset);
+  header->e_entry += -((header->e_entry ) - txt_segment_h->p_offset) + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
+  header->e_entry += entry_offset & ~(txt_segment_h->p_align - 1);
+//   rewrite because c'est cheum
   printf("new entry point: %#lx\n", header->e_entry);
   txt_segment_h->p_flags |= PROT_WRITE;
   txt_segment_h->p_filesz += bin->len_payload;
