@@ -27,7 +27,7 @@ int parse_program_headers(t_bin *bin) {
   }
   for (uint16_t idx = 0; idx != bin->elf_header->e_phnum; idx++) {
     curr_offset += bin->elf_header->e_phentsize;
-    push_back_phdrs(&bin->phdrs, (Elf64_Phdr *)(bin->raw_data + curr_offset));
+    push_back_phdrs(&bin->phdrs, (Elf64_Phdr *) (bin->raw_data + curr_offset));
   }
   return 0;
 }
@@ -43,7 +43,7 @@ void *get_segment(const phdr_list_t *head, int (*callback)(const void *)) {
 }
 
 int is_text_segment_64(const void *segment) {
-  if (((Elf64_Phdr *)segment)->p_type == PT_LOAD && ((Elf64_Phdr *)segment)->p_flags & PF_X) {
+  if (((Elf64_Phdr *) segment)->p_type == PT_LOAD && ((Elf64_Phdr *) segment)->p_flags & PF_X) {
     return 1;
   }
   return 0;

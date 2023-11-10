@@ -39,7 +39,6 @@ int check_elf_header(Elf64_Ehdr *elf64Ehdr) {
 }
 
 
-
 int main(int ac, char **av) {
   t_bin bin = {};
 
@@ -51,7 +50,7 @@ int main(int ac, char **av) {
     printf("Error init\n");
     return 1;
   }
-  bin.elf_header = (Elf64_Ehdr *)bin.raw_data;
+  bin.elf_header = (Elf64_Ehdr *) bin.raw_data;
   if (check_elf_header(bin.elf_header)) {
     printf("Error checking elf header\n");
     return 1;

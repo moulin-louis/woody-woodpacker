@@ -53,7 +53,8 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
 }
 
 __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
-  printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2], header->e_ident[3]);
+  printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2],
+         header->e_ident[3]);
   printf("Class: 0x%02x - ", header->e_ident[EI_CLASS]);
   switch (header->e_ident[EI_CLASS]) {
     case 0x1:
