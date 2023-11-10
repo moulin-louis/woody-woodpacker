@@ -28,6 +28,9 @@ int craft_payload(t_bin *bin) {
   //change data_len
   Elf64_Phdr *text_segment = get_segment(bin->phdrs, is_text_segment_64);
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN)) = text_segment->p_filesz;
+  //change decrypt_fn
+  //change og_entry
+  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY)) = bin->elf_header->e_entry;
   printf("key_ptr in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_KEY, bin->elf_header->e_ident[EI_DATA]));
   printf("key_len in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_KEY_LEN, bin->elf_header->e_ident[EI_DATA]));
   printf("data_ptr in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_DATA, bin->elf_header->e_ident[EI_DATA]));

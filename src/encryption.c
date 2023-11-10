@@ -13,10 +13,6 @@ int encryption(t_bin *bin) {
   //get text segment
   const Elf64_Phdr *text_segment = NULL;
   text_segment = get_segment(bin->phdrs, is_text_segment_64);
-  if (!text_segment) {
-    dprintf(2, "No text segment found\n");
-    return 1;
-  }
   //get key from urandom
   bin->key = calloc(1, KEY_SIZE);
   bin->len_key = KEY_SIZE;
