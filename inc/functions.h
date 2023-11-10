@@ -5,7 +5,6 @@
 #ifndef WOODY_WOODPACKER_FUNCTIONS_H
 #define WOODY_WOODPACKER_FUNCTIONS_H
 
-#include "structure.h"
 #include "woody.h"
 
 
