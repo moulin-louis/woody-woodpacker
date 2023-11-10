@@ -66,8 +66,12 @@ void *find_code_cave(t_bin *bin) {
     }
   }
   memcpy(bin->raw_data + txt_segment_h->p_offset + txt_segment_h->p_filesz, bin->payload, bin->len_payload);
-
-  header->e_entry += txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
+  printf("e entry = %#lx\n", header->e_entry);
+  printf("txt segment offset = %#lx\n", txt_segment_h->p_offset);
+  printf("txt mensz = %#lx\n", txt_segment_h->p_memsz);
+  printf("adding thsi to e entry = %#lx\n", -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz);
+  header->e_entry += -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
+  printf("new entry point: %#lx\n", header->e_entry);
   txt_segment_h->p_flags |= PROT_WRITE;
   txt_segment_h->p_filesz += bin->len_payload;
   txt_segment_h->p_memsz += bin->len_payload;

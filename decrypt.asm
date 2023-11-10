@@ -17,6 +17,5 @@ start_over:
     add rcx, 0x1
     cmp r8, rcx
     jne start_over
-    ret
     pop r8
     jmp r8
