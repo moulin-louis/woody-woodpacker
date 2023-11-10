@@ -1,7 +1,5 @@
 #include "woody.h"
 
-uint64_t base_address;
-
 int init(t_bin *bin, char **av) {
   int file = open(av[1], O_RDONLY);
   if (file == -1) {
@@ -40,16 +38,7 @@ int check_elf_header(Elf64_Ehdr *elf64Ehdr) {
   return 0;
 }
 
-int save_new_file(t_bin *ptr) {
-  int fd = open("./woody", O_WRONLY | O_CREAT , 0777);
-  if (fd == -1) {
-    printf("Error opening file\n");
-    return 1;
-  }
-  write(fd, ptr->raw_data, ptr->data_len);
-  close(fd);
-  return 0;
-}
+
 
 int main(int ac, char **av) {
   t_bin bin = {};
@@ -62,8 +51,7 @@ int main(int ac, char **av) {
     printf("Error init\n");
     return 1;
   }
-//   memcpy(&bin.elf_header, bin.raw_data, sizeof(Elf64_Ehdr));
-  bin.elf_header = (Elf64_Ehdr *)bin.raw_data;	
+  bin.elf_header = (Elf64_Ehdr *)bin.raw_data;
   if (check_elf_header(bin.elf_header)) {
     printf("Error checking elf header\n");
     return 1;
@@ -74,9 +62,9 @@ int main(int ac, char **av) {
     printf("Error encryption\n");
     return 1;
   }
-  find_code_cave(&bin);
   //prepare payload
   //inject payload
+  find_code_cave(&bin);
   //save new file
   if (save_new_file(&bin)) {
     printf("Error saving new file\n");

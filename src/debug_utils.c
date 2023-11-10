@@ -1,5 +1,5 @@
 //
-// Created by louis on 11/1/23.
+// Created by loumouli on 11/10/23.
 //
 
 #include "woody.h"
@@ -52,33 +52,10 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
   dprintf(1, "\n");
 }
 
-int read_file(int file, char **result, size_t *len) {
-  while (1) {
-    char buff[8192];
-    ssize_t retval = read(file, buff, sizeof(buff));
-    if (retval == -1) {
-      free(*result);  // Free allocated memory before returning
-      return 3;
-    }
-    if (retval == 0) {
-      break;
-    }
-    char *new_result = realloc(*result, *len + retval); // Check realloc return value
-    if (new_result == NULL) {
-      free((void *) result); // Free previously allocated memory
-      return 4; // Return a different error code
-    }
-    *result = new_result;
-    memcpy(*result + *len, buff, retval);
-    *len += retval;
-  }
-  return 0;
-}
-
 __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
   printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2], header->e_ident[3]);
   printf("Class: 0x%02x - ", header->e_ident[EI_CLASS]);
-      switch (header->e_ident[EI_CLASS]) {
+  switch (header->e_ident[EI_CLASS]) {
     case 0x1:
       printf("32-bits\n");
       break;
@@ -124,11 +101,64 @@ __attribute__((unused)) void hangup(void) {
   (void) retval;
 }
 
-uint64_t allign_down(uint64_t x, uint64_t align) {
-  return (x) & ~(align - 1);
+__attribute__((unused)) char *type_program_to_str(Elf64_Word type) {
+  switch (type) {
+    case PT_NULL:
+      return "PT_NULL";
+    case PT_LOAD:
+      return "PT_LOAD";
+    case PT_DYNAMIC:
+      return "PT_DYNAMIC";
+    case PT_INTERP:
+      return "PT_INTERP";
+    case PT_NOTE:
+      return "PT_NOTE";
+    case PT_SHLIB:
+      return "PT_SHLIB";
+    case PT_PHDR:
+      return "PT_PHDR";
+    case PT_TLS:
+      return "PT_TLS";
+    case PT_NUM:
+      return "PT_NUM";
+    case PT_LOOS:
+      return "PT_LOOS";
+    case PT_GNU_EH_FRAME:
+      return "PT_GNU_EH_FRAME";
+    case PT_GNU_STACK:
+      return "PT_GNU_STACK";
+    case PT_GNU_RELRO:
+      return "PT_GNU_RELRO";
+    case 0x6474e553:
+      return "PT_LOSUNW";
+    default:
+      return "Unknown type";
+  }
 }
 
-uint64_t allign_up(uint64_t x, uint64_t align) {
-  uint64_t result = allign_down(x + align -1, align);
-  return result ? result : align;
+__attribute__((unused)) void print_program_headers(phdr_list_t *head) {
+  for (phdr_list_t *node = head; node; node = node->next) {
+    if (node->program_header->p_type != PT_LOAD) {
+      continue;
+    }
+    printf("Type: 0x%08x - ", node->program_header->p_type);
+    printf("%s\n", type_program_to_str(node->program_header->p_type));
+    printf("Flags: 0x%08x - ", node->program_header->p_flags);
+    if (node->program_header->p_flags & (1 << 2)) {
+      printf("PF_R ");
+    }
+    if (node->program_header->p_flags & (1 << 1)) {
+      printf("PF_W ");
+    }
+    if (node->program_header->p_flags & (1 << 0)) {
+      printf("PF_X ");
+    }
+    printf("\n");
+    printf("Offset: 0x%016lx\n", node->program_header->p_offset);
+    printf("Virtual address: 0x%016lx\n", node->program_header->p_vaddr);
+    printf("Size in file: 0x%016lx\n", node->program_header->p_filesz);
+    printf("Size in memory: 0x%016lx\n", node->program_header->p_memsz);
+    printf("Alignment: 0x%016lx\n", node->program_header->p_align);
+    printf("\n");
+  }
 }

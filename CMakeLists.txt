@@ -9,8 +9,9 @@ add_compile_options(-g -Wall -Werror -Wextra)
 
 add_executable(woody_woodpacker
         src/main.c
-        src/utils.c
-        src/parsing/segment_header.c
-        src/encryption.c
+		src/encryption.c
 		src/find_code_cave.c
+		src/segment.c
+		src/file_io.c
+		src/debug_utils.c
 )
