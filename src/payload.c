@@ -51,8 +51,9 @@ int craft_payload(t_bin *bin) {
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN)) = 0x25;
 //  TODO !!!!!
 //  change og_entry jmp offset
+  uint32_t size_to_entry = 0x50;
 //  printf("diff to jmp = %#lx\n", -(sizeof(blueprint_payload) + text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_offset)));
-//  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY)) = -(sizeof(blueprint_payload) + text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_offset));
+ *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY)) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr));
   print_info_payload(bin);
   return 0;
 }
@@ -61,6 +62,7 @@ __attribute__((unused)) void print_info_payload(t_bin *bin) {
 //  printf("key_ptr in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_KEY, bin->elf_header->e_ident[EI_DATA]));
 //  printf("key_len in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_KEY_LEN, bin->elf_header->e_ident[EI_DATA]));
   printf("data offset in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_DATA, bin->elf_header->e_ident[EI_DATA]));
+  printf("data og entry in payload = %#x\n", -get_uint32(bin->payload + PAYLOAD_OFFSET_OG_ENTRY, bin->elf_header->e_ident[EI_DATA]));
 //  printf("data_len in payload = %#x\n", get_uint32(bin->payload + PAYLOAD_OFFSET_DATA_LEN, bin->elf_header->e_ident[EI_DATA]));
 //  printf("HEXDUMP payload: \n");
 //  hexdump(bin->payload, sizeof(blueprint_payload), 0);
