@@ -97,7 +97,7 @@ __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
 }
 
 __attribute__((unused)) void hangup(void) {
-  char buf[1];
+  uint8_t buf[1];
   ssize_t retval = read(1, buf, 1);
   (void) retval;
 }

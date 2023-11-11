@@ -18,7 +18,7 @@ void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
   tmp->next = new;
 }
 
-int parse_program_headers(t_bin *bin) {
+int32_t parse_program_headers(t_bin *bin) {
   size_t curr_offset = bin->elf_header->e_phoff;
 
   if (sizeof(Elf64_Phdr) != bin->elf_header->e_phentsize) {
@@ -32,7 +32,7 @@ int parse_program_headers(t_bin *bin) {
   return 0;
 }
 
-void *get_segment(const phdr_list_t *head, int (*callback)(const void *)) {
+void *get_segment(const phdr_list_t *head, int32_t (*callback)(const void *)) {
   const phdr_list_t *tmp = head;
   while (tmp) {
     if (callback(tmp->program_header))
@@ -42,7 +42,7 @@ void *get_segment(const phdr_list_t *head, int (*callback)(const void *)) {
   return NULL;
 }
 
-int is_text_segment_64(const void *segment) {
+int32_t is_text_segment_64(const void *segment) {
   if (((Elf64_Phdr *) segment)->p_type == PT_LOAD && ((Elf64_Phdr *) segment)->p_flags & PF_X) {
     return 1;
   }

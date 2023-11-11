@@ -21,10 +21,12 @@ uint8_t decrypt_fn[49] = {
     0x49, 0x39, 0xC8, 0x75, 0xE4, 0x41, 0x58, 0x41, 0xFF, 0xE0
 };
 
-int craft_payload(t_bin *bin) {
+int32_t craft_payload(t_bin *bin) {
   Elf64_Phdr *text_segment = get_segment(bin->phdrs, is_text_segment_64);
   uint32_t size_to_data = 0x3a;
   uint32_t size_to_entry = 0x50;
+  uint32_t offset_jmp_key = 0x22;
+  uint32_t offset_jmp_decrypt = 0x25;
 
   //init payload
   bin->payload = malloc(sizeof(blueprint_payload) + sizeof (decrypt_fn) + bin->len_key);
@@ -33,7 +35,7 @@ int craft_payload(t_bin *bin) {
   memcpy(bin->payload + sizeof(blueprint_payload) + bin->len_key, decrypt_fn, sizeof(decrypt_fn));
   bin->len_payload = sizeof(blueprint_payload) + sizeof(decrypt_fn) + bin->len_key;
 //  change key offset
-  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY)) = ((uint32_t)0x22);
+  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY)) = offset_jmp_key;
 //  change key_len
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY_LEN)) = bin->len_key;
 //  change data offset
@@ -41,7 +43,7 @@ int craft_payload(t_bin *bin) {
 //  change data_len
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN)) = text_segment->p_filesz;
 //  change decrypt_fn jmp offset
-  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN)) = 0x25;
+  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN)) = offset_jmp_decrypt;
 //  change og_entry jmp offset
  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY)) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr));
   print_info_payload(bin);

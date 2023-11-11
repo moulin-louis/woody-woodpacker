@@ -15,7 +15,7 @@ uint64_t cave_too_small(t_bin *bin, uint64_t cave_begin) {
   return (cave_begin + bin->len_payload - bin->data_len);
 }
 
-int reinit_bin_ptr(t_bin *bin) {
+int32_t reinit_bin_ptr(t_bin *bin) {
 	bin->elf_header = (Elf64_Ehdr *)bin->raw_data;
 	size_t curr_offset = bin->elf_header->e_phoff;
 	phdr_list_t *current_phdrs = bin->phdrs;
@@ -26,7 +26,7 @@ int reinit_bin_ptr(t_bin *bin) {
 	return 0;
 }
 
-int	modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
+int32_t modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
 	for (phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
@@ -36,7 +36,7 @@ int	modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
 	return 0;
 }
 
-int resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
+int32_t resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
   void *tmp = realloc(bin->raw_data, bin->data_len + resize_needed);
   if (!tmp) {
     perror("realloc");

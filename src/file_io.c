@@ -4,8 +4,8 @@
 
 #include "woody.h"
 
-int save_new_file(t_bin *ptr) {
-  int fd = open("./woody", O_WRONLY | O_CREAT, 0777);
+int32_t save_new_file(t_bin *ptr) {
+  int32_t fd = open("./woody", O_WRONLY | O_CREAT, 0777);
   if (fd == -1) {
     printf("Error opening file\n");
     return 1;
@@ -15,9 +15,9 @@ int save_new_file(t_bin *ptr) {
   return 0;
 }
 
-int read_file(int file, char **result, size_t *len) {
+int32_t read_file(int32_t file, uint8_t **result, size_t *len) {
   while (1) {
-    char buff[8192];
+    uint8_t buff[8192];
     ssize_t retval = read(file, buff, sizeof(buff));
     if (retval == -1) {
       free(*result);  // Free allocated memory before returning
@@ -26,7 +26,7 @@ int read_file(int file, char **result, size_t *len) {
     if (retval == 0) {
       break;
     }
-    char *new_result = realloc(*result, *len + retval); // Check realloc return value
+    uint8_t *new_result = realloc(*result, *len + retval); // Check realloc return value
     if (new_result == NULL) {
       free((void *) result); // Free previously allocated memory
       return 4; // Return a different error code
@@ -38,8 +38,8 @@ int read_file(int file, char **result, size_t *len) {
   return 0;
 }
 
-int get_key(uint8_t *key) {
-  int fd = open("/dev/urandom", O_RDONLY);
+int32_t get_key(uint8_t *key) {
+  int32_t fd = open("/dev/urandom", O_RDONLY);
   if (fd == -1) {
     dprintf(2, "Failed to open /dev/urandom\n");
     return 1;

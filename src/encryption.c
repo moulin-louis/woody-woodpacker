@@ -5,12 +5,12 @@
 #include "woody.h"
 
 //void xor_encrypt(void *data, size_t len, const uint8_t *key, size_t len_key) {
-void xor_encrypt(uint8_t *key, size_t len_key, void *data, size_t len_data) {
+void xor_encrypt(uint8_t *key, uint64_t len_key, void *data, uint64_t len_data) {
   for (size_t i = 0; i < len_data; i++)
     ((char *) data)[i] ^= key[i % len_key];
 }
 
-int encryption(t_bin *bin) {
+int32_t encryption(t_bin *bin) {
   //get text segment
   const Elf64_Phdr *text_segment = NULL;
   text_segment = get_segment(bin->phdrs, is_text_segment_64);

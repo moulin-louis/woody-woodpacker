@@ -8,33 +8,29 @@
 #include "woody.h"
 
 
-int read_file(int file, char **result, size_t *len);
+int32_t read_file(int32_t file, uint8_t **result, uint64_t *len);
 
-int parse_program_headers(t_bin *bin);
+int32_t parse_program_headers(t_bin *bin);
 
-int encryption(t_bin *bin);
+int32_t encryption(t_bin *bin);
 
 __attribute__((unused)) void print_program_headers(phdr_list_t *head);
 
 __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header);
 
-__attribute__((unused)) void hexdump(void *data, size_t len, int32_t row);
+__attribute__((unused)) void hexdump(void *data, uint64_t len, int32_t row);
 
-uint64_t allign_down(uint64_t x, uint64_t align);
+int32_t is_text_segment_64(const void *segment);
 
-uint64_t allign_up(uint64_t x, uint64_t align);
-
-int is_text_segment_64(const void *segment);
-
-void *get_segment(const phdr_list_t *head, int (*callback)(const void *));
+void *get_segment(const phdr_list_t *head, int32_t (*callback)(const void *));
 
 void *find_code_cave(t_bin *bin);
 
-int get_key(uint8_t *key);
+int32_t get_key(uint8_t *key);
 
-int save_new_file(t_bin *ptr);
+int32_t save_new_file(t_bin *ptr);
 
-int craft_payload(t_bin *bin);
+int32_t craft_payload(t_bin *bin);
 
 uint8_t get_uint8(uint8_t *data, uint8_t endian);
 

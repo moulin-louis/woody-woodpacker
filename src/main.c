@@ -2,13 +2,13 @@
 
 
 
-int init(t_bin *bin, char **av) {
-  int file = open(av[1], O_RDONLY);
+int32_t init(t_bin *bin, char **av) {
+  int32_t file = open(av[1], O_RDONLY);
   if (file == -1) {
     printf("Error opening file\n");
     return 2;
   }
-  if (read_file(file, (char **) &bin->raw_data, &bin->data_len) != 0) {
+  if (read_file(file, &bin->raw_data, &bin->data_len) != 0) {
     printf("Error reading file\n");
     return 3;
   }
@@ -16,7 +16,7 @@ int init(t_bin *bin, char **av) {
   return 0;
 }
 
-int check_elf_header(Elf64_Ehdr *elf64Ehdr) {
+int32_t check_elf_header(Elf64_Ehdr *elf64Ehdr) {
   if (memcmp(elf64Ehdr, "\x7F" "ELF", 4) != 0) {
     printf("This is not an ELF file\n");
     return 1;
