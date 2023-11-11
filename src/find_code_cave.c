@@ -57,8 +57,8 @@ void *find_code_cave(t_bin *bin) {
   uint64_t resize_needed = cave_too_small(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz);
   if (resize_needed) {
     resize_needed *= 2;
-    printf("resize needed: %lu\n", resize_needed);
-    printf("Cave too small\n");
+//    printf("resize needed: %lu\n", resize_needed);
+//    printf("Cave too small\n");
 	resize_needed = ALIGN_UP(resize_needed, 4096);
     if (resize_file(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz, resize_needed)) {
       printf("Error while resizing file\n");
@@ -66,20 +66,20 @@ void *find_code_cave(t_bin *bin) {
     }
   }
   memcpy(bin->raw_data + txt_segment_h->p_offset + txt_segment_h->p_filesz, bin->payload, bin->len_payload);
-  printf("e entry = %#lx\n", header->e_entry);
-  printf("txt segment offset = %#lx\n", txt_segment_h->p_offset);
-  printf("txt mensz = %#lx\n", txt_segment_h->p_memsz);
-  printf("adding thsi to e entry = %#lx\n", -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz);
+//  printf("e entry = %#lx\n", header->e_entry);
+//  printf("txt segment offset = %#lx\n", txt_segment_h->p_offset);
+//  printf("txt mensz = %#lx\n", txt_segment_h->p_memsz);
+//  printf("adding thsi to e entry = %#lx\n", -(header->e_entry - txt_segment_h->p_offset) + txt_segment_h->p_memsz);
 //   header->e_entry = 0x20c0;
 //   txt_segment_h->p_memsz = 0x1149;
 //   u_int64_t neg_offset = ~txt_segment_h->p_offset;
 //   printf ("neg offset: %lx\n", neg_offset);
   u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
-  printf ("entry offset: %#lx\n", entry_offset);
+//  printf ("entry offset: %#lx\n", entry_offset);
 //   entry_offset &= 
   header->e_entry += -entry_offset + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
 //   rewrite because c'est cheum
-  printf("new entry point: %#lx\n", header->e_entry);
+//  printf("new entry point: %#lx\n", header->e_entry);
   txt_segment_h->p_flags |= PROT_WRITE;
   txt_segment_h->p_filesz += bin->len_payload;
   txt_segment_h->p_memsz += bin->len_payload;

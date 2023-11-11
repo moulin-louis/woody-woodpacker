@@ -163,3 +163,8 @@ __attribute__((unused)) void print_program_headers(phdr_list_t *head) {
     printf("\n");
   }
 }
+
+__attribute__((unused)) void print_info_payload(t_bin *bin) {
+  printf("total hexdump: \n");
+  hexdump(bin->payload, bin->len_payload, 0);
+}

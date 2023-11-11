@@ -21,9 +21,8 @@ int32_t encryption(t_bin *bin) {
     dprintf(2, "Failed to get key\n");
     return 1;
   }
-  //print key in hexa
-  printf("key: ");
-  hexdump(bin->key, bin->len_key, 0);
+//  printf("key: ");
+//  hexdump(bin->key, bin->len_key, 0);
   //encrypt text segment
   void *data = bin->raw_data + text_segment->p_offset;
   xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);

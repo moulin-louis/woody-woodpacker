@@ -34,23 +34,24 @@ int32_t craft_payload(t_bin *bin) {
   memcpy(bin->payload + sizeof(blueprint_payload), bin->key, bin->len_key);
   memcpy(bin->payload + sizeof(blueprint_payload) + bin->len_key, decrypt_fn, sizeof(decrypt_fn));
   bin->len_payload = sizeof(blueprint_payload) + sizeof(decrypt_fn) + bin->len_key;
+
 //  change key offset
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY)) = offset_jmp_key;
+
 //  change key_len
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY_LEN)) = bin->len_key;
+
 //  change data offset
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA)) = -(size_to_data + text_segment->p_memsz);
+
 //  change data_len
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN)) = text_segment->p_filesz;
+
 //  change decrypt_fn jmp offset
   *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN)) = offset_jmp_decrypt;
+
 //  change og_entry jmp offset
  *((uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY)) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr));
-  print_info_payload(bin);
+//  print_info_payload(bin);
   return 0;
-}
-
-__attribute__((unused)) void print_info_payload(t_bin *bin) {
-  printf("total hexdump: \n");
-  hexdump(bin->payload, bin->len_payload, 0);
 }
