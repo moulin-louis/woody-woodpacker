@@ -9,6 +9,7 @@ int main(int ac, char **av) {
   printf("Hello, World!\n");
   printf("ac: %d\n", ac);
   printf("av: %p\n", av);
-  int x[10];
+  char c[1];
+  read(0, c, 1);
   return 0;
 }

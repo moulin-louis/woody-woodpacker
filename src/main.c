@@ -55,6 +55,13 @@ int main(int ac, char **av) {
     return 1;
   }
   parse_program_headers(&bin);
+  //check if their some relocation
+  if (get_segment(bin.phdrs, is_dyn_segment_64) != NULL) {
+    printf("LOG: Found DYNAMIC segment, checking if there is relocation\n");
+    check_relocations_presence(&bin);
+  } else
+    printf("LOG: No DYNAMIC segment found\n");
+
   if (get_segment(bin.phdrs, is_text_segment_64) == NULL) {
     printf("No text segment found\n");
     return 1;

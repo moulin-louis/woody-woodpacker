@@ -19,6 +19,10 @@ __attribute__((unused)) void hexdump(void *data, uint64_t len, int32_t row);
 
 int32_t is_text_segment_64(const void *segment);
 
+int32_t is_dyn_segment_64(const void *segment);
+
+void check_relocations_presence(const t_bin *bin);
+
 void *get_segment(const phdr_list_t *head, int32_t (*callback)(const void *));
 
 int find_code_cave(t_bin *bin);

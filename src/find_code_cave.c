@@ -55,7 +55,6 @@ int find_code_cave(t_bin *bin) {
   Elf64_Phdr *txt_segment_h = get_segment(bin->phdrs, is_text_segment_64);
   uint64_t resize_needed = cave_too_small(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz);
   if (resize_needed) {
-    resize_needed *= 2;
 //    printf("resize needed: %lu\n", resize_needed);
 //    printf("Cave too small\n");
 	resize_needed = ALIGN_UP(resize_needed, 4096);
@@ -64,7 +63,13 @@ int find_code_cave(t_bin *bin) {
       return 1;
     }
   }
-  memcpy(bin->raw_data + txt_segment_h->p_offset + txt_segment_h->p_filesz, bin->payload, bin->len_payload);
+  uint64_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
+  offset = ALIGN_UP(offset, 4);
+  printf("will write to this offset: %#lx\n", offset);
+  printf("offset %% 4 = %lu\n", offset % 4);
+  // printf("offset %% 4 = %lu\n", offset % 4);
+  // printf("will write to this offset: %#lx\n", offset);
+  memcpy(bin->raw_data + offset, bin->payload, bin->len_payload);
 //  printf("e entry = %#lx\n", header->e_entry);
 //  printf("txt segment offset = %#lx\n", txt_segment_h->p_offset);
 //  printf("txt mensz = %#lx\n", txt_segment_h->p_memsz);

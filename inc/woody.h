@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <elf.h>
+#include <stdbool.h>
 
 #define KEY_SIZE 32
 

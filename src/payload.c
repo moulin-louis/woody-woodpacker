@@ -42,16 +42,16 @@ int32_t craft_payload(t_bin *bin) {
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY_LEN) = bin->len_key;
 
 //  change data offset
-  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA) = -(size_to_data + text_segment->p_memsz);
+  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA) = -(size_to_data + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + 3);
 
 //  change data_len
-  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN) = text_segment->p_filesz;
+  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN) = text_segment->p_filesz -(bin->elf_header->e_entry - text_segment->p_vaddr);
 
 //  change decrypt_fn jmp offset
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN) = offset_jmp_decrypt;
 
 //  change og_entry jmp offset
- *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr));
+ *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + 3);
 //  print_info_payload(bin);
   return 0;
 }

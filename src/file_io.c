@@ -5,7 +5,7 @@
 #include "woody.h"
 
 int32_t save_new_file(t_bin *ptr) {
-  int32_t fd = open("./woody", O_WRONLY | O_CREAT, 0777);
+  int32_t fd = open("./woody", O_WRONLY | O_CREAT | O_TRUNC, 0777);
   if (fd == -1) {
     printf("Error opening file\n");
     return 1;
