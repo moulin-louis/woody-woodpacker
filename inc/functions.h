@@ -5,9 +5,6 @@
 #ifndef WOODY_WOODPACKER_FUNCTIONS_H
 #define WOODY_WOODPACKER_FUNCTIONS_H
 
-#include "woody.h"
-
-
 int32_t read_file(int32_t file, uint8_t **result, uint64_t *len);
 
 int32_t parse_program_headers(t_bin *bin);
@@ -24,7 +21,7 @@ int32_t is_text_segment_64(const void *segment);
 
 void *get_segment(const phdr_list_t *head, int32_t (*callback)(const void *));
 
-void *find_code_cave(t_bin *bin);
+int find_code_cave(t_bin *bin);
 
 int32_t get_key(uint8_t *key);
 

@@ -8,11 +8,11 @@ uint64_t cave_too_small(t_bin *bin, uint64_t cave_begin) {
       continue;
     if (cave_begin + bin->len_payload < seg_h->program_header->p_offset)
       return 0;
-    return (cave_begin + bin->len_payload - seg_h->program_header->p_offset);
+    return cave_begin + bin->len_payload - seg_h->program_header->p_offset;
   }
   if (cave_begin + bin->len_payload < bin->data_len)
     return 0;
-  return (cave_begin + bin->len_payload - bin->data_len);
+  return cave_begin + bin->len_payload - bin->data_len;
 }
 
 int32_t reinit_bin_ptr(t_bin *bin) {
@@ -26,14 +26,13 @@ int32_t reinit_bin_ptr(t_bin *bin) {
 	return 0;
 }
 
-int32_t modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
+void modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
 	for (phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
 			seg_h->program_header->p_vaddr += resize_needed;
 		}
 	}
-	return 0;
 }
 
 int32_t resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
@@ -51,9 +50,9 @@ int32_t resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
   return 0;
 }
 
-void *find_code_cave(t_bin *bin) {
+int find_code_cave(t_bin *bin) {
   Elf64_Ehdr *header = bin->elf_header;
-  Elf64_Phdr *txt_segment_h = (Elf64_Phdr *) get_segment(bin->phdrs, is_text_segment_64);
+  Elf64_Phdr *txt_segment_h = get_segment(bin->phdrs, is_text_segment_64);
   uint64_t resize_needed = cave_too_small(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz);
   if (resize_needed) {
     resize_needed *= 2;
@@ -62,7 +61,7 @@ void *find_code_cave(t_bin *bin) {
 	resize_needed = ALIGN_UP(resize_needed, 4096);
     if (resize_file(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz, resize_needed)) {
       printf("Error while resizing file\n");
-      return NULL;
+      return 1;
     }
   }
   memcpy(bin->raw_data + txt_segment_h->p_offset + txt_segment_h->p_filesz, bin->payload, bin->len_payload);
@@ -83,5 +82,5 @@ void *find_code_cave(t_bin *bin) {
   txt_segment_h->p_flags |= PROT_WRITE;
   txt_segment_h->p_filesz += bin->len_payload;
   txt_segment_h->p_memsz += bin->len_payload;
-  return NULL;
+  return 0;
 }

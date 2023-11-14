@@ -12,7 +12,7 @@ start_over:
     mov rax, rcx ; move rcx inside rax
     mov edx, 0x0 ; put 0 in rdx
     div rsi ; div rsi by rax
-    movzx eax,rcx = i % len_key
+    movzx eax,rcx ; i % len_key
     xor byte [rdi + rcx], al ; data[i] ^= al
     add rcx, 0x1 ; increment rcx
     cmp r8, rcx  ; check if we decrypt all data

@@ -28,7 +28,7 @@ int32_t read_file(int32_t file, uint8_t **result, size_t *len) {
     }
     uint8_t *new_result = realloc(*result, *len + retval); // Check realloc return value
     if (new_result == NULL) {
-      free((void *) result); // Free previously allocated memory
+      free(result); // Free previously allocated memory
       return 4; // Return a different error code
     }
     *result = new_result;

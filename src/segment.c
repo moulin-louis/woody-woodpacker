@@ -36,7 +36,7 @@ void *get_segment(const phdr_list_t *head, int32_t (*callback)(const void *)) {
   const phdr_list_t *tmp = head;
   while (tmp) {
     if (callback(tmp->program_header))
-      return (tmp->program_header);
+      return tmp->program_header;
     tmp = tmp->next;
   }
   return NULL;

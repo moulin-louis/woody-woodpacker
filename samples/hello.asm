@@ -1,8 +1,7 @@
 ; in `elk/samples/hello-pie.asm`
+global _start
 
-        global _start
-
-        section .text
+    section .text
 
 _start: mov rdi, 1      ; stdout fd
         mov rsi, msg

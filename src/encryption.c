@@ -7,9 +7,9 @@
 void xor_encrypt(uint8_t *key, uint64_t len_key, uint8_t *data, uint64_t len_data) {
   for (size_t i = 0; i < len_data; i++) {
     printf("i = %zu and i = len_key = %zu ", i, i % len_key);
-    printf("key char = %#02x ", key[i % len_key]);
+    printf("key char = 0x%02x ", key[i % len_key]);
     data[i] ^= key[i % len_key];
-    printf("data char = %#02x\n",data[i]);
+    printf("data char = 0x%02x\n",data[i]);
   }
 }
 

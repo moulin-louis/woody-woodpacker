@@ -1,9 +1,7 @@
 #include "woody.h"
 
-
-
 int32_t init(t_bin *bin, char **av) {
-  int32_t file = open(av[1], O_RDONLY);
+  const int32_t file = open(av[1], O_RDONLY);
   if (file == -1) {
     printf("Error opening file\n");
     return 2;
@@ -16,7 +14,7 @@ int32_t init(t_bin *bin, char **av) {
   return 0;
 }
 
-int32_t check_elf_header(Elf64_Ehdr *elf64Ehdr) {
+int32_t check_elf_header(const Elf64_Ehdr *elf64Ehdr) {
   if (memcmp(elf64Ehdr, "\x7F" "ELF", 4) != 0) {
     printf("This is not an ELF file\n");
     return 1;
@@ -39,7 +37,6 @@ int32_t check_elf_header(Elf64_Ehdr *elf64Ehdr) {
   }
   return 0;
 }
-
 
 int main(int ac, char **av) {
   t_bin bin = {};
@@ -73,7 +70,10 @@ int main(int ac, char **av) {
     return 1;
   }
   //inject payload
-  find_code_cave(&bin);
+  if (find_code_cave(&bin)) {
+    printf("Error finding code cave\n");
+    return 1;
+  }
   //save new file
   if (save_new_file(&bin)) {
     printf("Error saving new file\n");

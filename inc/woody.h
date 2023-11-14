@@ -6,15 +6,11 @@
 #define WOODY_WOODPACKER_WOODY_H
 
 #include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdint.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <elf.h>
 
 #define KEY_SIZE 32
@@ -50,7 +46,5 @@ typedef struct {
 #define ALIGN_UP(x, align) ALIGN_DOWN((x) + (align) - 1, (align)) ? ALIGN_DOWN((x) + (align) - 1, (align)) : (align)
 
 #include "functions.h"
-
-
 
 #endif //WOODY_WOODPACKER_WOODY_H
