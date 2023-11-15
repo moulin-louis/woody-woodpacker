@@ -66,7 +66,7 @@ int find_code_cave(t_bin *bin) {
   uint64_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
   offset = ALIGN_UP(offset, 4);
   printf("will write to this offset: %#lx\n", offset);
-  printf("offset %% 4 = %lu\n", offset % 4);
+  printf("offset %% 4 = %lu\n", (offset - (txt_segment_h->p_offset + txt_segment_h->p_filesz)) % 4);
   // printf("offset %% 4 = %lu\n", offset % 4);
   // printf("will write to this offset: %#lx\n", offset);
   memcpy(bin->raw_data + offset, bin->payload, bin->len_payload);
@@ -81,7 +81,7 @@ int find_code_cave(t_bin *bin) {
   u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
 //  printf ("entry offset: %#lx\n", entry_offset);
 //   entry_offset &= 
-  header->e_entry += -entry_offset + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY;
+  header->e_entry += -entry_offset + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY + offset - (txt_segment_h->p_offset + txt_segment_h->p_filesz);
 //   rewrite because c'est cheum
 //  printf("new entry point: %#lx\n", header->e_entry);
   txt_segment_h->p_flags |= PROT_WRITE;

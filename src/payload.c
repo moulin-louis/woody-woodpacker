@@ -37,6 +37,10 @@ int32_t craft_payload(t_bin *bin) {
   memcpy(bin->payload + sizeof(blueprint_payload) + bin->len_key, decrypt_fn, sizeof(decrypt_fn));
   bin->len_payload = sizeof(blueprint_payload) + sizeof(decrypt_fn) + bin->len_key;
 
+  size_t offset = text_segment->p_offset + text_segment->p_filesz;
+  offset = (ALIGN_UP(offset, 4)) - offset;
+  printf("offset: %lu\n", offset);
+
 //  change key offset
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY + 8) = offset_jmp_key;
 
@@ -44,7 +48,7 @@ int32_t craft_payload(t_bin *bin) {
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY_LEN + 8) = bin->len_key;
 
 //  change data offset
-  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA + 8) = -(size_to_data + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + 3);
+  *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA + 8) = -(size_to_data + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + offset);
 
 //  change data_len
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DATA_LEN + 8) = text_segment->p_filesz -(bin->elf_header->e_entry - text_segment->p_vaddr);
@@ -53,7 +57,7 @@ int32_t craft_payload(t_bin *bin) {
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_DECRYPT_FN + 8) = offset_jmp_decrypt;
 
 //  change og_entry jmp offset
- *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY + 16) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + 3);
+ *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_OG_ENTRY + 16) = -(size_to_entry + text_segment->p_memsz -(bin->elf_header->e_entry - text_segment->p_vaddr) + offset);
 //  print_info_payload(bin);
   return 0;
 }
