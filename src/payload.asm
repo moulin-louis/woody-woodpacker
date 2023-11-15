@@ -2,6 +2,14 @@ section .text
     global _start
 woody:     db `....WOODY....\n`, 14
 _start:
+	push rax
+	push rcx
+	push rdx
+	push rbx
+	push rsp
+	push rbp
+	push rsi
+	push rdi
 	mov rax, 1 ; load write syscall
     mov rdi, 1 ; load stdout fd
     lea rsi, [rel woody] ; load buff
@@ -14,4 +22,12 @@ _start:
     lea r8, [rel after_decrypt]
     jmp 0x1 ; jump to decrypt function (replace 0x1 during execution of woody)
 after_decrypt:
+	pop rdi
+	pop rsi
+	pop rbp
+	pop rsp
+	pop rbx
+	pop rdx
+	pop rcx
+	pop rax
     jmp 0x1 ; jump to OG entry point (replace 0x1 during execution of woody)
