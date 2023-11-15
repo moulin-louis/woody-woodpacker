@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(woody_woodpacker C)
 
-set(CMAKE_C_COMPILER "/usr/bin/clang")
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_COMPILER "/usr/bin/clang-18")
+set(CMAKE_C_STANDARD 23)
 
 include_directories(./inc)
 add_compile_options(-g -Wall -Werror -Wextra)

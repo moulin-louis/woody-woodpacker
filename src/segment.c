@@ -59,8 +59,9 @@ int32_t is_dyn_segment_64(const void *segment) {
 void print_dyn_tag(const Elf64_Dyn *tag);
 
 
-void check_relocations_presence(const t_bin *bin) {
+int check_relocations_presence(const t_bin *bin) {
   const Elf64_Phdr *dyn_header = get_segment(bin->phdrs, is_dyn_segment_64);
+  const Elf64_Phdr *text_segment = get_segment(bin->phdrs, is_text_segment_64);
   const Elf64_Dyn *dyn_data = (Elf64_Dyn *) (bin->raw_data + dyn_header->p_offset);
   bool found_rel_tag = false;
   //printf info dyn segment
@@ -69,19 +70,24 @@ void check_relocations_presence(const t_bin *bin) {
       found_rel_tag = true;
       const Elf64_Rela *rela = (Elf64_Rela *) (bin->raw_data + dyn_data[idx].d_un.d_ptr);
       for (uint64_t idx_rela = 0; idx_rela < dyn_data[idx + 1].d_un.d_val / sizeof(Elf64_Rela); idx_rela++) {
+        //check if relocation is inside the executable segment
         printf("Relocation %lu\n", idx_rela);
         printf("r_offset: 0x%016lx\n", rela[idx_rela].r_offset);
+        if (rela[idx_rela].r_offset >= text_segment->p_vaddr &&
+            rela[idx_rela].r_offset <= text_segment->p_vaddr + text_segment->p_memsz) {
+          printf("WARNING: Relocation inside the executable segment\n");
+          return 1;
+        }
         printf("\n");
       }
       break;
     }
   }
-  if (found_rel_tag) {
-    //print relocations
+  if (found_rel_tag)
     printf( "WARNING: FOUND SOME RELOCATIONS IN THE BINARY\n");
-  }
   else
     printf("WARNING: NO RELOCATIONS FOUND IN THE BINARY\n");
+  return 0;
 }
 
 void print_dyn_tag(const Elf64_Dyn *tag) {

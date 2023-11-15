@@ -58,14 +58,16 @@ int main(int ac, char **av) {
   //check if their some relocation
   if (get_segment(bin.phdrs, is_dyn_segment_64) != NULL) {
     printf("LOG: Found DYNAMIC segment, checking if there is relocation\n");
-    check_relocations_presence(&bin);
+    if (check_relocations_presence(&bin)) {
+      printf("ERROR: Cant encrypt an executables with relocation in it!!\n");
+      return 0;
+    }
   } else
     printf("LOG: No DYNAMIC segment found\n");
-
-  if (get_segment(bin.phdrs, is_text_segment_64) == NULL) {
-    printf("No text segment found\n");
-    return 1;
-  }
+  // if (get_segment(bin.phdrs, is_text_segment_64) == NULL) {
+    // printf("No text segment found\n");
+    // return 1;
+  // }
   //encryption
   if (encryption(&bin)) {
     printf("Error encryption\n");
