@@ -55,9 +55,7 @@ int find_code_cave(t_bin *bin) {
   Elf64_Phdr *txt_segment_h = get_segment(bin->phdrs, is_text_segment_64);
   uint64_t resize_needed = cave_too_small(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz);
   if (resize_needed) {
-//    printf("resize needed: %lu\n", resize_needed);
-//    printf("Cave too small\n");
-	resize_needed = ALIGN_UP(resize_needed, 4096);
+	  resize_needed = ALIGN_UP(resize_needed, 4096);
     if (resize_file(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz, resize_needed)) {
       printf("Error while resizing file\n");
       return 1;

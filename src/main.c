@@ -45,15 +45,18 @@ int main(int ac, char **av) {
     printf("Wrong usage\n");
     return 1;
   }
+  //initialization
   if (init(&bin, av)) {
     printf("Error init\n");
     return 1;
   }
   bin.elf_header = (Elf64_Ehdr *) bin.raw_data;
+  //heatlh check
   if (check_elf_header(bin.elf_header)) {
     printf("Error checking elf header\n");
     return 1;
   }
+  //parse program headers
   parse_program_headers(&bin);
   //check if their some relocation
   if (get_segment(bin.phdrs, is_dyn_segment_64) != NULL) {
@@ -83,6 +86,15 @@ int main(int ac, char **av) {
   if (save_new_file(&bin)) {
     printf("Error saving new file\n");
     return 1;
+  }
+  //cleanup
+  free(bin.key);
+  free(bin.raw_data);
+  free(bin.payload);
+  for (phdr_list_t *tmp = bin.phdrs; tmp != NULL;) {
+    phdr_list_t *next = tmp->next;
+    free(tmp);
+    tmp = next;
   }
   return 0;
 }

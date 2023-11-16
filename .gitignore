@@ -68,5 +68,6 @@ samples/hello-pie
 samples/nodata
 samples/no-std
 samples/tiny_c
+samples/hello-relocation
 ./woody
 woody

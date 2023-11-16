@@ -23,9 +23,8 @@ int32_t read_file(const int32_t file, uint8_t **result, size_t *len) {
       free(*result);  // Free allocated memory before returning
       return 3;
     }
-    if (retval == 0) {
+    if (retval == 0)
       break;
-    }
     uint8_t *new_result = realloc(*result, *len + retval); // Check realloc return value
     if (new_result == NULL) {
       free(result); // Free previously allocated memory
