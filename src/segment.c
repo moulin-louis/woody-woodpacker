@@ -5,7 +5,10 @@
 #include "woody.h"
 
 void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
-  phdr_list_t *new = calloc(sizeof(phdr_list_t), 1);
+  phdr_list_t *new = malloc(sizeof(phdr_list_t));
+  if (new == NULL)
+      return;
+  memset(new, 0, sizeof(*new));
   new->program_header = phdr;
   if (*head == NULL) {
     *head = new;

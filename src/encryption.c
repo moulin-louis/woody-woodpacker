@@ -18,7 +18,14 @@ int32_t encryption(t_bin *bin) {
   //get key from urandom
   bin->key = calloc(1, KEY_SIZE);
   bin->len_key = 32;
-  if (get_key(bin->key)) {
+  char *key = getenv("KEY");
+  if (key != NULL) {
+    bin->key = (uint8_t *)strdup(key);
+    if (bin->key == NULL) {
+      return 1;
+    }
+    bin->len_key = strlen((char *)bin->key);
+  } else if (get_key(bin->key)) {
     return 1;
   }
   void *data = bin->raw_data + text_segment->p_offset + (bin->elf_header->e_entry - text_segment->p_vaddr);
