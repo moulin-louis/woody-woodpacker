@@ -5,7 +5,10 @@
 #include "woody.h"
 
 void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
-  phdr_list_t *new = calloc(sizeof(phdr_list_t), 1);
+  phdr_list_t *new = malloc(sizeof(phdr_list_t));
+  if (new == NULL)
+      return;
+  memset(new, 0, sizeof(*new));
   new->program_header = phdr;
   if (*head == NULL) {
     *head = new;
@@ -21,10 +24,12 @@ void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
 int32_t parse_program_headers(t_bin *bin) {
   size_t curr_offset = bin->elf_header->e_phoff;
 
+  //check if the size of program header is correct
   if (sizeof(Elf64_Phdr) != bin->elf_header->e_phentsize) {
     printf("ERROR: Wrong size of program header\n");
     return 1;
   }
+  //push all program header into a linked list
   for (uint16_t idx = 0; idx != bin->elf_header->e_phnum; idx++) {
     curr_offset += bin->elf_header->e_phentsize;
     push_back_phdrs(&bin->phdrs, (Elf64_Phdr *) (bin->raw_data + curr_offset));
@@ -61,38 +66,48 @@ void print_dyn_tag(const Elf64_Dyn *tag);
 
 int check_relocations_presence(const t_bin *bin) {
   const Elf64_Phdr *dyn_header = get_segment(bin->phdrs, is_dyn_segment_64);
+  if (dyn_header == NULL)
+    return 1;
   const Elf64_Phdr *text_segment = get_segment(bin->phdrs, is_text_segment_64);
-  const Elf64_Dyn *dyn_data = (Elf64_Dyn *) (bin->raw_data + dyn_header->p_offset);
-  bool found_rel_tag = false;
-  //printf info dyn segment
+  const Elf64_Dyn *rela = NULL;
+  const Elf64_Dyn *relasz = NULL;
+  const Elf64_Dyn *relaent = NULL;
+  //copy all dyn_structure into arr till DT_NULL
   for (uint64_t idx = 0; idx < dyn_header->p_filesz / sizeof(Elf64_Dyn); idx++) {
-    if (dyn_data[idx].d_tag == DT_RELA) {
-      found_rel_tag = true;
-      const Elf64_Rela *rela = (Elf64_Rela *) (bin->raw_data + dyn_data[idx].d_un.d_ptr);
-      for (uint64_t idx_rela = 0; idx_rela < dyn_data[idx + 1].d_un.d_val / sizeof(Elf64_Rela); idx_rela++) {
-        //check if relocation is inside the executable segment
-        printf("Relocation %lu\n", idx_rela);
-        printf("r_offset: 0x%016lx\n", rela[idx_rela].r_offset);
-        if (rela[idx_rela].r_offset >= text_segment->p_vaddr &&
-            rela[idx_rela].r_offset <= text_segment->p_vaddr + text_segment->p_memsz) {
-          printf("WARNING: Relocation inside the executable segment\n");
-          return 1;
-        }
-        printf("\n");
-      }
+    const Elf64_Dyn *tmp = (Elf64_Dyn *) (bin->raw_data + dyn_header->p_offset + idx * sizeof(Elf64_Dyn));
+    if (tmp->d_tag == DT_RELA)
+      rela = tmp;
+    else if (tmp->d_tag == DT_RELASZ)
+      relasz = tmp;
+    else if (tmp->d_tag == DT_RELAENT)
+      relaent = tmp;
+    else if (tmp->d_tag == DT_NULL)
       break;
-    }
   }
-  if (found_rel_tag)
-    printf( "WARNING: FOUND SOME RELOCATIONS IN THE BINARY\n");
-  else
-    printf("WARNING: NO RELOCATIONS FOUND IN THE BINARY\n");
+  if (rela == NULL || relasz == NULL || relaent == NULL) {
+    printf(ANSI_GREEN "LOG: No RELOCATIONS found in the binary\n");
+    return 0;
+  }
+  printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
+  //checking if relocation can cause problem
+  printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
+  if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
+    printf(ANSI_RED ANSI_CROSS "\n");
+    printf(ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
+    return 1;
+  }
+  printf(ANSI_GREEN ANSI_CHECK "\n");
+  printf(ANSI_GREEN "LOG: No RELOCATIONS in the text segment\n" ANSI_RESET);
   return 0;
 }
 
+
 void print_dyn_tag(const Elf64_Dyn *tag) {
-  printf("tag.d_tag = 0x%lx : ", tag->d_tag);
+  printf("tag->d_tag = 0x%lx : ", tag->d_tag);
     switch (tag->d_tag) {
+      case DT_NULL:
+        printf("DT_NULL\n");
+      break;
       case DT_NEEDED:
         printf("DT_NEEDED\n");
       break;
@@ -143,6 +158,34 @@ void print_dyn_tag(const Elf64_Dyn *tag) {
       break;
       case DT_REL:
         printf("DT_REL\n");
+      break;
+      case DT_RELSZ:
+        printf("DT_RELSZ\n");
+      break;
+      case DT_RELENT:
+        printf("DT_RELENT\n");
+      break;
+      case DT_INIT_ARRAY:
+        printf("DT_INIT_ARRAY\n");
+      break;
+      case DT_FINI_ARRAY:
+        printf("DT_FINI_ARRAY\n");
+      break;
+      case DT_INIT_ARRAYSZ:
+        printf("DT_INIT_ARRAYSZ\n");
+      break;
+      case DT_FINI_ARRAYSZ:
+        printf("DT_FINI_ARRAYSZ\n");
+      break;
+      case DT_PLTREL:
+        printf("DT_PLTREL\n");
+      break;
+      case DT_DEBUG:
+        printf("DT_DEBUG\n");
+      break;
+      case DT_JMPREL:
+        printf("DT_JMPREL\n");
+      break;
       default:
         printf("UNKNOWN\n");
     }

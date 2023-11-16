@@ -1,7 +1,7 @@
 #include "woody.h"
 
-uint64_t cave_too_small(t_bin *bin, uint64_t cave_begin) {
-  for (phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
+uint64_t cave_too_small(const t_bin *bin, const uint64_t cave_begin) {
+  for (const phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
     if (seg_h->program_header->p_type != PT_LOAD)
       continue;
     if (seg_h->program_header->p_offset < cave_begin)
@@ -26,8 +26,8 @@ int32_t reinit_bin_ptr(t_bin *bin) {
 	return 0;
 }
 
-void modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
-	for (phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
+void modify_header(const t_bin *bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+	for (const phdr_list_t *seg_h = bin->phdrs; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
 			seg_h->program_header->p_vaddr += resize_needed;
@@ -35,7 +35,7 @@ void modify_header(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
 	}
 }
 
-int32_t resize_file(t_bin *bin, uint64_t cave_begin, uint64_t resize_needed) {
+int32_t resize_file(t_bin *bin, const uint64_t cave_begin, const uint64_t resize_needed) {
   void *tmp = realloc(bin->raw_data, bin->data_len + resize_needed);
   if (!tmp) {
     perror("realloc");
@@ -55,9 +55,7 @@ int find_code_cave(t_bin *bin) {
   Elf64_Phdr *txt_segment_h = get_segment(bin->phdrs, is_text_segment_64);
   uint64_t resize_needed = cave_too_small(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz);
   if (resize_needed) {
-//    printf("resize needed: %lu\n", resize_needed);
-//    printf("Cave too small\n");
-	resize_needed = ALIGN_UP(resize_needed, 4096);
+	  resize_needed = ALIGN_UP(resize_needed, 4096);
     if (resize_file(bin, txt_segment_h->p_offset + txt_segment_h->p_filesz, resize_needed)) {
       printf("Error while resizing file\n");
       return 1;
@@ -79,7 +77,7 @@ int find_code_cave(t_bin *bin) {
 //   txt_segment_h->p_memsz = 0x1149;
 //   u_int64_t neg_offset = ~txt_segment_h->p_offset;
 //   printf ("neg offset: %lx\n", neg_offset);
-  u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
+  const u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
 //  printf ("entry offset: %#lx\n", entry_offset);
 //   entry_offset &= 
   header->e_entry += -entry_offset + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY + offset;
