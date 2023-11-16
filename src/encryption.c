@@ -20,6 +20,7 @@ int32_t encryption(t_bin *bin) {
   bin->len_key = 32;
   char *key = getenv("KEY");
   if (key != NULL) {
+    printf("Found key in ENV\n");
     bin->key = (uint8_t *)strdup(key);
     if (bin->key == NULL) {
       return 1;
