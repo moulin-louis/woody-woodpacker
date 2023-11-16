@@ -40,11 +40,11 @@ int32_t read_file(const int32_t file, uint8_t **result, size_t *len) {
 int32_t get_key(uint8_t *key) {
   const int32_t fd = open("/dev/urandom", O_RDONLY);
   if (fd == -1) {
-    dprintf(2, "Failed to open /dev/urandom\n");
+    fprintf(stderr, "Failed to open /dev/urandom\n");
     return 1;
   }
   if (read(fd, key, KEY_SIZE) == -1) {
-    dprintf(2, "Failed to read /dev/urandom\n");
+    fprintf(stderr, "Failed to read /dev/urandom\n");
     return 1;
   }
   close(fd);

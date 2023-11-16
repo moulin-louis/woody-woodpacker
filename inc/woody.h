@@ -46,6 +46,14 @@ typedef struct {
 #define ALIGN_DOWN(x, align) ((x) & ~(align - 1))
 #define ALIGN_UP(x, align) ALIGN_DOWN((x) + (align) - 1, (align)) ? ALIGN_DOWN((x) + (align) - 1, (align)) : (align)
 
+//define red/green/yellow and reset ansi color
+#define ANSI_RED     "\x1b[31m"
+#define ANSI_GREEN   "\x1b[32m"
+#define ANSI_YELLOW  "\x1b[33m"
+#define ANSI_RESET   "\x1b[0m"
+//define emoji
+#define ANSI_CHECK "\xE2\x9C\x94"
+#define ANSI_CROSS "\xE2\x9D\x8C"
 #include "functions.h"
 
 #endif //WOODY_WOODPACKER_WOODY_H

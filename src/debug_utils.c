@@ -28,12 +28,12 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
   if (row == 0) {
     for (size_t i = 0; i < len; i++) {
       if (((uint8_t *) data)[i] >= 0x20 && ((uint8_t *) data)[i] <= 0x7e) {
-        dprintf(1, "%c", ((uint8_t *) data)[i]);
+        fprintf(stdout, "%c", ((uint8_t *) data)[i]);
       } else {
-        dprintf(1, ".");
+        fprintf(stdout, ".");
       }
     }
-    dprintf(1, "\n");
+    fprintf(stdout, "\n");
     return;
   }
   for (size_t i = 0; i < len; i += row) {
@@ -42,14 +42,14 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
         break;
       }
       if (((uint8_t *) data)[j] >= 0x20 && ((uint8_t *) data)[j] <= 0x7e) {
-        dprintf(1, "%c", ((uint8_t *) data)[j]);
+        fprintf(stdout, "%c", ((uint8_t *) data)[j]);
       } else {
-        dprintf(1, ".");
+        fprintf(stdout, ".");
       }
     }
-    dprintf(1, "\n");
+    fprintf(stdout, "\n");
   }
-  dprintf(1, "\n");
+  fprintf(stdout, "\n");
 }
 
 __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {

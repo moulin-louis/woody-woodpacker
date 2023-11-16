@@ -41,7 +41,6 @@ int32_t craft_payload(t_bin *bin) {
 
   size_t offset = text_segment->p_offset + text_segment->p_filesz;
   offset = (ALIGN_UP(offset, 4)) - offset;
-  printf("offset: %lu\n", offset);
 
 //  change key offset
   *(uint32_t *)(bin->payload + PAYLOAD_OFFSET_KEY + 8) = offset_jmp_key;

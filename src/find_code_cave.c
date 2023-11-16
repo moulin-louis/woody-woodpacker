@@ -63,9 +63,9 @@ int find_code_cave(t_bin *bin) {
   }
   uint64_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
   offset = ALIGN_UP(offset, 4);
-  printf("will write to this offset: %#lx\n", offset);
-  printf("offset %% 4 = %lu\n", (offset - (txt_segment_h->p_offset + txt_segment_h->p_filesz)) % 4);
-  // printf("offset %% 4 = %lu\n", offset % 4);
+  // printf("will write to this offset: %#lx\n", offset);
+  // printf("offset %% 4 = %lu\n", (offset - (txt_segment_h->p_offset + txt_segment_h->p_filesz)) % 4);
+  // printfe"offset %% 4 = %lu\n", offset % 4);
   // printf("will write to this offset: %#lx\n", offset);
   memcpy(bin->raw_data + offset, bin->payload, bin->len_payload);
 //  printf("e entry = %#lx\n", header->e_entry);

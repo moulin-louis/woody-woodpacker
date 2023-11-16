@@ -21,10 +21,12 @@ void push_back_phdrs(phdr_list_t **head, Elf64_Phdr *phdr) {
 int32_t parse_program_headers(t_bin *bin) {
   size_t curr_offset = bin->elf_header->e_phoff;
 
+  //check if the size of program header is correct
   if (sizeof(Elf64_Phdr) != bin->elf_header->e_phentsize) {
     printf("ERROR: Wrong size of program header\n");
     return 1;
   }
+  //push all program header into a linked list
   for (uint16_t idx = 0; idx != bin->elf_header->e_phnum; idx++) {
     curr_offset += bin->elf_header->e_phentsize;
     push_back_phdrs(&bin->phdrs, (Elf64_Phdr *) (bin->raw_data + curr_offset));
@@ -80,16 +82,19 @@ int check_relocations_presence(const t_bin *bin) {
       break;
   }
   if (rela == NULL || relasz == NULL || relaent == NULL) {
-    printf("WARNING: NO RELOCATIONS FOUND IN THE BINARY\n");
+    printf(ANSI_GREEN "LOG: No RELOCATIONS found in the binary\n");
     return 0;
   }
-  printf("WARNING: Found RELOCATIONS in the binary\n");
-  printf("LOG: Checking if RELOCATIONS can cause problems\n");
+  printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
+  //checking if relocation can cause problem
+  printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
   if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
-    printf("ERROR: RELOCATIONS in the text segment\n");
+    printf(ANSI_RED ANSI_CROSS "\n");
+    printf(ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
     return 1;
   }
-  printf("LOG: NO RELOCATIONS in the text segment\n");
+  printf(ANSI_GREEN ANSI_CHECK "\n");
+  printf(ANSI_GREEN "LOG: No RELOCATIONS in the text segment\n" ANSI_RESET);
   return 0;
 }
 
