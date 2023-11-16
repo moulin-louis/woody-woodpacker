@@ -78,7 +78,7 @@ int find_code_cave(t_bin *bin) {
 //   txt_segment_h->p_memsz = 0x1149;
 //   u_int64_t neg_offset = ~txt_segment_h->p_offset;
 //   printf ("neg offset: %lx\n", neg_offset);
-  u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
+  const u_int64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
 //  printf ("entry offset: %#lx\n", entry_offset);
 //   entry_offset &= 
   header->e_entry += -entry_offset + txt_segment_h->p_memsz + PAYLOAD_OFFSET_ENTRY + offset - (txt_segment_h->p_offset + txt_segment_h->p_filesz);

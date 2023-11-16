@@ -4,7 +4,7 @@
 
 #include "woody.h"
 
-void xor_encrypt(uint8_t *key, uint64_t len_key, uint8_t *data, uint64_t len_data) {
+void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
   for (size_t i = 0; i < len_data; i++) {
     // printf("i = %zu and i = len_key = %zu ", i, i % len_key);
     // printf("key char = 0x%02x ", key[i % len_key]);
@@ -28,7 +28,7 @@ int32_t encryption(t_bin *bin) {
   // hexdump(bin->key, bin->len_key, 0);
   //encrypt text segment
   printf("writing at offset %lu\n", text_segment->p_offset + (bin->elf_header->e_entry - text_segment->p_vaddr));
-  printf(("for a len of %lu\n"), text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_vaddr));
+  printf("for a len of %lu\n", text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_vaddr));
   void *data = bin->raw_data + text_segment->p_offset + (bin->elf_header->e_entry - text_segment->p_vaddr);
   xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_vaddr));
   return 0;

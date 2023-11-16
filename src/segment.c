@@ -61,13 +61,15 @@ void print_dyn_tag(const Elf64_Dyn *tag);
 
 int check_relocations_presence(const t_bin *bin) {
   const Elf64_Phdr *dyn_header = get_segment(bin->phdrs, is_dyn_segment_64);
+  if (dyn_header == NULL)
+    return 1;
   const Elf64_Phdr *text_segment = get_segment(bin->phdrs, is_text_segment_64);
-  Elf64_Dyn *rela = NULL;
-  Elf64_Dyn *relasz = NULL;
-  Elf64_Dyn *relaent = NULL;
+  const Elf64_Dyn *rela = NULL;
+  const Elf64_Dyn *relasz = NULL;
+  const Elf64_Dyn *relaent = NULL;
   //copy all dyn_structure into arr till DT_NULL
   for (uint64_t idx = 0; idx < dyn_header->p_filesz / sizeof(Elf64_Dyn); idx++) {
-    Elf64_Dyn *tmp = (Elf64_Dyn *) (bin->raw_data + dyn_header->p_offset + idx * sizeof(Elf64_Dyn));
+    const Elf64_Dyn *tmp = (Elf64_Dyn *) (bin->raw_data + dyn_header->p_offset + idx * sizeof(Elf64_Dyn));
     if (tmp->d_tag == DT_RELA)
       rela = tmp;
     else if (tmp->d_tag == DT_RELASZ)
