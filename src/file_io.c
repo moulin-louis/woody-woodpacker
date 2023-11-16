@@ -4,8 +4,8 @@
 
 #include "woody.h"
 
-int32_t save_new_file(t_bin *ptr) {
-  int32_t fd = open("./woody", O_WRONLY | O_CREAT | O_TRUNC, 0777);
+int32_t save_new_file(const t_bin *ptr) {
+  const int32_t fd = open("./woody", O_WRONLY | O_CREAT | O_TRUNC, 0777);
   if (fd == -1) {
     printf("Error opening file\n");
     return 1;
@@ -15,10 +15,10 @@ int32_t save_new_file(t_bin *ptr) {
   return 0;
 }
 
-int32_t read_file(int32_t file, uint8_t **result, size_t *len) {
+int32_t read_file(const int32_t file, uint8_t **result, size_t *len) {
   while (1) {
     uint8_t buff[8192];
-    ssize_t retval = read(file, buff, sizeof(buff));
+    const ssize_t retval = read(file, buff, sizeof(buff));
     if (retval == -1) {
       free(*result);  // Free allocated memory before returning
       return 3;
@@ -39,7 +39,7 @@ int32_t read_file(int32_t file, uint8_t **result, size_t *len) {
 }
 
 int32_t get_key(uint8_t *key) {
-  int32_t fd = open("/dev/urandom", O_RDONLY);
+  const int32_t fd = open("/dev/urandom", O_RDONLY);
   if (fd == -1) {
     dprintf(2, "Failed to open /dev/urandom\n");
     return 1;

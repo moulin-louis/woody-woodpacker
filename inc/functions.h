@@ -29,7 +29,7 @@ int find_code_cave(t_bin *bin);
 
 int32_t get_key(uint8_t *key);
 
-int32_t save_new_file(t_bin *ptr);
+int32_t save_new_file(const t_bin *ptr);
 
 int32_t craft_payload(t_bin *bin);
 

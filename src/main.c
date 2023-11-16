@@ -64,10 +64,6 @@ int main(int ac, char **av) {
     }
   } else
     printf("LOG: No DYNAMIC segment found\n");
-  // if (get_segment(bin.phdrs, is_text_segment_64) == NULL) {
-    // printf("No text segment found\n");
-    // return 1;
-  // }
   //encryption
   if (encryption(&bin)) {
     printf("Error encryption\n");

@@ -3,7 +3,7 @@ section .text
 ;    global _start
 ;decrypt: ; void decrypt(void *key[rdi], size_t len_key[rsi], void *data[rdx], size_t len_data[rcx])
 decrypt:
-;    push r8
+    push r8
     mov r9, rdi ; put key in r9
     mov rdi, rdx ; put data in rdi
     mov r8, rcx ; put len_data in r8
@@ -17,6 +17,6 @@ start_over:
     add rcx, 0x1 ; increment rcx
     cmp r8, rcx  ; check if we decrypt all data
     jne start_over ; start over if not
-    ret
-;    pop r8 ; pop back value of r8
-;    jmp r8 ; jump to r8
+;    ret
+    pop r8 ; pop back value of r8
+    jmp r8 ; jump to r8
