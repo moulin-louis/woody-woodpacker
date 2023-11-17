@@ -16,6 +16,7 @@
 
 #define KEY_SIZE 32
 
+//64 BITS
 #define OFFSET_ENTRY_64 15
 
 #define OFFSET_KEY_64 0x2a
@@ -27,16 +28,17 @@
 #define OFFSET_DECRYPT_FN_64 0x47
 #define OFFSET_OG_ENTRY_64 0x4c
 
+//32 BITS
 #define OFFSET_ENTRY_32 0x0F
 
-#define OFFSET_KEY_32 0x30
-#define OFFSET_KEY_LEN_32 0x35
+#define OFFSET_KEY_32 0x39
+#define OFFSET_KEY_LEN_32 0x3B
 
-#define OFFSET_DATA_32 0x3b
-#define OFFSET_DATA_LEN_32 0x40
+#define OFFSET_DATA_32 0x47
+#define OFFSET_DATA_LEN_32 0x4C
 
-#define OFFSET_DECRYPT_FN_32 0x47
-#define OFFSET_OG_ENTRY_32 0x4c
+#define OFFSET_DECRYPT_FN_32 0x56
+#define OFFSET_OG_ENTRY_32 0x63
 
 typedef struct phdr_64_s {
   Elf64_Phdr* program_header;
