@@ -16,31 +16,53 @@
 
 #define KEY_SIZE 32
 
-#define PAYLOAD_OFFSET_ENTRY 15
+//64 BITS
+#define OFFSET_ENTRY_64 15
 
-#define PAYLOAD_OFFSET_KEY 0x2a
-#define PAYLOAD_OFFSET_KEY_LEN 0x2f
+#define OFFSET_KEY_64 0x2a
+#define OFFSET_KEY_LEN_64 0x2f
 
-#define PAYLOAD_OFFSET_DATA 0x36
-#define PAYLOAD_OFFSET_DATA_LEN 0x3b
+#define OFFSET_DATA_64 0x36
+#define OFFSET_DATA_LEN_64 0x3b
 
-#define PAYLOAD_OFFSET_DECRYPT_FN 0x47
-#define PAYLOAD_OFFSET_OG_ENTRY 0x4c
+#define OFFSET_DECRYPT_FN_64 0x47
+#define OFFSET_OG_ENTRY_64 0x4c
 
-typedef struct phdr_s {
-  Elf64_Phdr *program_header;
-  struct phdr_s *next;
-} phdr_list_t;
+//32 BITS
+#define OFFSET_ENTRY_32 0x0F
+
+#define OFFSET_KEY_32 0x39
+#define OFFSET_KEY_LEN_32 0x3B
+
+#define OFFSET_DATA_32 0x47
+#define OFFSET_DATA_LEN_32 0x4C
+
+#define OFFSET_DECRYPT_FN_32 0x56
+#define OFFSET_OG_ENTRY_32 0x63
+
+typedef struct phdr_64_s {
+  Elf64_Phdr* program_header;
+  struct phdr_64_s* next;
+} phdr_list_64_t;
+
+typedef struct phdr_32_s {
+  Elf32_Phdr* program_header;
+  struct phdr_32_s* next;
+} phdr_list_32_t;
 
 typedef struct {
-  uint8_t *raw_data;
+  uint8_t* raw_data;
   size_t data_len;
-  uint8_t *payload;
+  uint8_t* payload;
   size_t len_payload;
-  uint8_t *key;
+  uint8_t* key;
   size_t len_key;
-  Elf64_Ehdr *elf_header;
-  phdr_list_t *phdrs;
+  //64 bits
+  Elf64_Ehdr* elf64_header;
+  phdr_list_64_t* phdrs_64;
+  //32 bits
+  Elf32_Ehdr* elf32_header;
+  phdr_list_32_t* phdrs_32;
 } t_bin;
 
 #define ALIGN_DOWN(x, align) ((x) & ~(align - 1))
@@ -54,6 +76,8 @@ typedef struct {
 //define emoji
 #define ANSI_CHECK "\xE2\x9C\x94"
 #define ANSI_CROSS "\xE2\x9D\x8C"
+
+//prototype of all functions
 #include "functions.h"
 
 #endif //WOODY_WOODPACKER_WOODY_H

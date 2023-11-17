@@ -15,4 +15,5 @@ add_executable(woody_woodpacker
 		src/file_io.c
 		src/debug_utils.c
 		src/payload.c
+		src/relocations.c
 )

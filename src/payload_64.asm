@@ -1,6 +1,6 @@
 section .text
     global _start
-woody:     db `....WOODY....\n`, 14
+woody:     db `....WOODY....\n`, 15
 _start:
 	push rax
 	push rcx
