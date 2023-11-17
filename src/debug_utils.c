@@ -4,12 +4,12 @@
 
 #include "woody.h"
 
-__attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
+__attribute__((unused)) void hexdump(void* data, size_t len, int32_t row) {
   if (row == 0) {
     for (size_t i = 0; i < len; i++) {
-      printf( "%02x ", ((uint8_t *) data)[i]);
+      printf("%02x ", ((uint8_t *)data)[i]);
     }
-    printf( "\n");
+    printf("\n");
     return;
   }
   for (size_t i = 0; i < len; i += row) {
@@ -17,19 +17,20 @@ __attribute__((unused)) void hexdump(void *data, size_t len, int32_t row) {
       if (j == len) {
         break;
       }
-      printf( "%02x ", ((uint8_t *) data)[j]);
+      printf("%02x ", ((uint8_t *)data)[j]);
     }
-    printf( "\n");
+    printf("\n");
   }
-  printf( "\n");
+  printf("\n");
 }
 
-__attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
+__attribute__((unused)) void asciidump(void* data, size_t len, uint32_t row) {
   if (row == 0) {
     for (size_t i = 0; i < len; i++) {
-      if (((uint8_t *) data)[i] >= 0x20 && ((uint8_t *) data)[i] <= 0x7e) {
-        fprintf(stdout, "%c", ((uint8_t *) data)[i]);
-      } else {
+      if (((uint8_t *)data)[i] >= 0x20 && ((uint8_t *)data)[i] <= 0x7e) {
+        fprintf(stdout, "%c", ((uint8_t *)data)[i]);
+      }
+      else {
         fprintf(stdout, ".");
       }
     }
@@ -41,9 +42,10 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
       if (j == len) {
         break;
       }
-      if (((uint8_t *) data)[j] >= 0x20 && ((uint8_t *) data)[j] <= 0x7e) {
-        fprintf(stdout, "%c", ((uint8_t *) data)[j]);
-      } else {
+      if (((uint8_t *)data)[j] >= 0x20 && ((uint8_t *)data)[j] <= 0x7e) {
+        fprintf(stdout, "%c", ((uint8_t *)data)[j]);
+      }
+      else {
         fprintf(stdout, ".");
       }
     }
@@ -52,7 +54,7 @@ __attribute__((unused)) void asciidump(void *data, size_t len, uint32_t row) {
   fprintf(stdout, "\n");
 }
 
-__attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
+__attribute__((unused)) void print_elf_header(Elf64_Ehdr* header) {
   printf("e_ident: %02x %02x %02x %02x\n", header->e_ident[0], header->e_ident[1], header->e_ident[2],
          header->e_ident[3]);
   printf("Class: 0x%02x - ", header->e_ident[EI_CLASS]);
@@ -99,10 +101,10 @@ __attribute__((unused)) void print_elf_header(Elf64_Ehdr *header) {
 __attribute__((unused)) void hangup(void) {
   uint8_t buf[1];
   const ssize_t retval = read(1, buf, 1);
-  (void) retval;
+  (void)retval;
 }
 
-__attribute__((unused)) char *type_program_to_str(Elf64_Word type) {
+__attribute__((unused)) char* type_program_to_str(Elf64_Word type) {
   switch (type) {
     case PT_NULL:
       return "PT_NULL";
@@ -137,8 +139,8 @@ __attribute__((unused)) char *type_program_to_str(Elf64_Word type) {
   }
 }
 
-__attribute__((unused)) void print_program_headers(phdr_list_t *head) {
-  for (phdr_list_t *node = head; node; node = node->next) {
+__attribute__((unused)) void print_program_headers(phdr_list_t* head) {
+  for (phdr_list_t* node = head; node; node = node->next) {
     if (node->program_header->p_type != PT_LOAD) {
       continue;
     }
@@ -164,7 +166,98 @@ __attribute__((unused)) void print_program_headers(phdr_list_t *head) {
   }
 }
 
-__attribute__((unused)) void print_info_payload(t_bin *bin) {
+__attribute__((unused)) void print_info_payload(t_bin* bin) {
   printf("total hexdump: \n");
   hexdump(bin->payload, bin->len_payload, 0);
+}
+
+//print info about a dynamic tag
+void print_dyn_tag(const Elf64_Dyn* tag) {
+  printf("tag->d_tag = 0x%lx : ", tag->d_tag);
+  switch (tag->d_tag) {
+    case DT_NULL:
+      printf("DT_NULL\n");
+      break;
+    case DT_NEEDED:
+      printf("DT_NEEDED\n");
+      break;
+    case DT_PLTRELSZ:
+      printf("DT_PLTRELSZ\n");
+      break;
+    case DT_PLTGOT:
+      printf("DT_PLTGOT\n");
+      break;
+    case DT_HASH:
+      printf("DT_HASH\n");
+      break;
+    case DT_STRTAB:
+      printf("DT_STRTAB\n");
+      break;
+    case DT_SYMTAB:
+      printf("DT_SYMTAB\n");
+      break;
+    case DT_RELA:
+      printf("DT_RELA\n");
+      break;
+    case DT_RELASZ:
+      printf("DT_RELASZ\n");
+      break;
+    case DT_RELAENT:
+      printf("DT_RELAENT\n");
+      break;
+    case DT_STRSZ:
+      printf("DT_STRSZ\n");
+      break;
+    case DT_SYMENT:
+      printf("DT_SYMENT\n");
+      break;
+    case DT_INIT:
+      printf("DT_INIT\n");
+      break;
+    case DT_FINI:
+      printf("DT_FINI\n");
+      break;
+    case DT_SONAME:
+      printf("DT_SONAME\n");
+      break;
+    case DT_RPATH:
+      printf("DT_RPATH\n");
+      break;
+    case DT_SYMBOLIC:
+      printf("DT_SYMBOLIC\n");
+      break;
+    case DT_REL:
+      printf("DT_REL\n");
+      break;
+    case DT_RELSZ:
+      printf("DT_RELSZ\n");
+      break;
+    case DT_RELENT:
+      printf("DT_RELENT\n");
+      break;
+    case DT_INIT_ARRAY:
+      printf("DT_INIT_ARRAY\n");
+      break;
+    case DT_FINI_ARRAY:
+      printf("DT_FINI_ARRAY\n");
+      break;
+    case DT_INIT_ARRAYSZ:
+      printf("DT_INIT_ARRAYSZ\n");
+      break;
+    case DT_FINI_ARRAYSZ:
+      printf("DT_FINI_ARRAYSZ\n");
+      break;
+    case DT_PLTREL:
+      printf("DT_PLTREL\n");
+      break;
+    case DT_DEBUG:
+      printf("DT_DEBUG\n");
+      break;
+    case DT_JMPREL:
+      printf("DT_JMPREL\n");
+      break;
+    default:
+      printf("UNKNOWN\n");
+  }
+  printf("tag.d_un = 0x%lx\n", tag->d_un.d_ptr);
 }

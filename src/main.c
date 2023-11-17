@@ -1,6 +1,7 @@
 #include "woody.h"
 
-int32_t init(t_bin *bin, char **av) {
+//init the bin struct
+int32_t init(t_bin* bin, char** av) {
   //open the infile in readonly
   const int32_t file = open(av[1], O_RDONLY);
   if (file == -1) {
@@ -17,7 +18,8 @@ int32_t init(t_bin *bin, char **av) {
   return 0;
 }
 
-int32_t check_elf_header(const Elf64_Ehdr *elf64Ehdr) {
+//check health elf header from file
+int32_t check_elf_header(const Elf64_Ehdr* elf64Ehdr) {
   //check for the magic number
   if (memcmp(elf64Ehdr, "\x7F" "ELF", 4) != 0) {
     printf("This is not an ELF file\n");
@@ -46,7 +48,7 @@ int32_t check_elf_header(const Elf64_Ehdr *elf64Ehdr) {
   return 0;
 }
 
-int main(int ac, char **av) {
+int main(int ac, char** av) {
   t_bin bin = {};
 
   if (ac != 2) {
@@ -66,7 +68,7 @@ int main(int ac, char **av) {
 
   //heatlh check
   printf(ANSI_GREEN "LOG: Health check.............: ");
-  bin.elf_header = (Elf64_Ehdr *) bin.raw_data;
+  bin.elf_header = (Elf64_Ehdr *)bin.raw_data;
   if (check_elf_header(bin.elf_header)) {
     printf(ANSI_RED ANSI_CROSS "\n");
     printf("Error checking elf header\n" ANSI_RESET);
@@ -90,7 +92,8 @@ int main(int ac, char **av) {
       printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
       return 0;
     }
-  } else
+  }
+  else
     printf(ANSI_GREEN "LOG: No DYNAMIC segment found.: " ANSI_CHECK "\n");
 
   //encryption
@@ -127,15 +130,15 @@ int main(int ac, char **av) {
     printf("Error saving new file\n" ANSI_RESET);
     return 1;
   }
-  printf(ANSI_CHECK "\n"  ANSI_RESET);
+  printf(ANSI_CHECK "\n" ANSI_RESET);
 
   //cleanup
   printf(ANSI_GREEN "LOG: Cleaning up ressources...: ");
   free(bin.key);
   free(bin.raw_data);
   free(bin.payload);
-  for (phdr_list_t *tmp = bin.phdrs; tmp != NULL;) {
-    phdr_list_t *next = tmp->next;
+  for (phdr_list_t* tmp = bin.phdrs; tmp != NULL;) {
+    phdr_list_t* next = tmp->next;
     free(tmp);
     tmp = next;
   }

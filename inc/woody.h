@@ -28,19 +28,19 @@
 #define PAYLOAD_OFFSET_OG_ENTRY 0x4c
 
 typedef struct phdr_s {
-  Elf64_Phdr *program_header;
-  struct phdr_s *next;
+  Elf64_Phdr* program_header;
+  struct phdr_s* next;
 } phdr_list_t;
 
 typedef struct {
-  uint8_t *raw_data;
+  uint8_t* raw_data;
   size_t data_len;
-  uint8_t *payload;
+  uint8_t* payload;
   size_t len_payload;
-  uint8_t *key;
+  uint8_t* key;
   size_t len_key;
-  Elf64_Ehdr *elf_header;
-  phdr_list_t *phdrs;
+  Elf64_Ehdr* elf_header;
+  phdr_list_t* phdrs;
 } t_bin;
 
 #define ALIGN_DOWN(x, align) ((x) & ~(align - 1))
