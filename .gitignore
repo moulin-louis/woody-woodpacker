@@ -63,7 +63,7 @@ cmake-build-release
 ./samples/no-std
 ./samples/tiny_c
 
-samples/hello
+samples/*
 samples/hello-pie
 samples/nodata
 samples/no-std
