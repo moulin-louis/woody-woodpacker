@@ -14,14 +14,14 @@ void xor_encrypt(const uint8_t* key, const uint64_t len_key, uint8_t* data, cons
 }
 
 //Encrypt the text segment base on a random key provided by urandom or the user in the ENV
-int32_t encryption(t_bin* bin) {
+int32_t encryption_64(t_bin* bin) {
   //get text segment
   const Elf64_Phdr* text_segment = NULL;
-  text_segment = get_segment(bin->phdrs, is_text_segment_64);
+  text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
   //get key from urandom
   bin->key = calloc(1, KEY_SIZE);
   bin->len_key = 32;
-  char* key = getenv("KEY");
+  const char* key = getenv("KEY");
   if (key != NULL) {
     printf("Found key in ENV\n");
     bin->key = (uint8_t *)strdup(key);
@@ -33,7 +33,30 @@ int32_t encryption(t_bin* bin) {
   else if (get_key(bin->key)) {
     return 1;
   }
-  void* data = bin->raw_data + text_segment->p_offset + (bin->elf_header->e_entry - text_segment->p_vaddr);
-  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf_header->e_entry - text_segment->p_vaddr));
+  void* data = bin->raw_data + text_segment->p_offset + (bin->elf64_header->e_entry - text_segment->p_vaddr);
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
+  return 0;
+}
+int32_t encryption_32(t_bin *bin) {
+  //get text segment
+  const Elf32_Phdr* text_segment = NULL;
+  text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
+  //get key from urandom
+  bin->key = calloc(1, KEY_SIZE);
+  bin->len_key = 32;
+  const char* key = getenv("KEY");
+  if (key != NULL) {
+    printf("Found key in ENV\n");
+    bin->key = (uint8_t *)strdup(key);
+    if (bin->key == NULL) {
+      return 1;
+    }
+    bin->len_key = strlen((char *)bin->key);
+  }
+  else if (get_key(bin->key)) {
+    return 1;
+  }
+  void* data = bin->raw_data + text_segment->p_offset + (bin->elf32_header->e_entry - text_segment->p_vaddr);
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf32_header->e_entry - text_segment->p_vaddr));
   return 0;
 }

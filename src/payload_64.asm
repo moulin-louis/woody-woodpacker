@@ -1,6 +1,6 @@
 section .text
     global _start
-woody:     db `....WOODY....\n`, 14
+woody:     db `....WOODY....\n`, 15
 _start:
 	push rax
 	push rcx
@@ -31,4 +31,3 @@ after_decrypt:
 	pop rcx
 	pop rax
     jmp 0x1 ; jump to OG entry point (replace 0x1 during execution of woody)
-
