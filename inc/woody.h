@@ -15,10 +15,9 @@
 #include <stdbool.h>
 
 #define KEY_SIZE 32
+#define OFFSET_ENTRY 0x0F
 
 //64 BITS
-#define OFFSET_ENTRY_64 0x0F
-
 #define OFFSET_KEY_64 0x2a
 #define OFFSET_KEY_LEN_64 0x2f
 
@@ -29,7 +28,6 @@
 #define OFFSET_OG_ENTRY_64 0x4c
 
 //32 BITS
-#define OFFSET_ENTRY_32 0x0F
 
 #define OFFSET_KEY_32 0x39
 #define OFFSET_KEY_LEN_32 0x3B
@@ -64,6 +62,7 @@ typedef struct {
   Elf32_Ehdr* elf32_header;
   phdr_list_32_t* phdrs_32;
 } t_bin;
+
 
 #define ALIGN_DOWN(x, align) ((x) & ~(align - 1))
 #define ALIGN_UP(x, align) ALIGN_DOWN((x) + (align) - 1, (align)) ? ALIGN_DOWN((x) + (align) - 1, (align)) : (align)

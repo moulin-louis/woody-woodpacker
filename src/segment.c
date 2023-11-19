@@ -45,7 +45,7 @@ int32_t parse_program_headers_64(t_bin* bin) {
 
   //check if the size of program header is correct
   if (sizeof(Elf64_Phdr) != bin->elf64_header->e_phentsize) {
-    printf("ERROR: Wrong size of program header\n");
+    fprintf(stderr, "ERROR: Wrong size of program header\n");
     return 1;
   }
   //push all program header into a linked list
@@ -61,7 +61,7 @@ int32_t parse_program_headers_32(t_bin* bin) {
 
   //check if the size of program header is correct
   if (sizeof(Elf32_Phdr) != bin->elf32_header->e_phentsize) {
-    printf("ERROR: Wrong size of program header\n");
+    fprintf(stderr, "ERROR: Wrong size of program header\n");
     return 1;
   }
   //push all program header into a linked list

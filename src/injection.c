@@ -187,7 +187,7 @@ int find_code_cave_64(t_bin* bin) {
 	}
 	memcpy(bin->raw_data + aligned_offset, bin->payload, bin->len_payload);
 	const uint64_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
-	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY_64 + offset;
+	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY + offset;
 	txt_segment_h->p_flags |= PROT_WRITE;
 	txt_segment_h->p_filesz += bin->len_payload + offset;
 	txt_segment_h->p_memsz += bin->len_payload + offset;
@@ -214,7 +214,7 @@ int find_code_cave_32(t_bin* bin) {
 	}
 	memcpy(bin->raw_data + aligned_offset, bin->payload, bin->len_payload);
 	const uint32_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
-	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY_32 + offset;
+	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY + offset;
 	txt_segment_h->p_flags |= PROT_WRITE;
 	txt_segment_h->p_filesz += bin->len_payload + offset;
 	txt_segment_h->p_memsz += bin->len_payload + offset;

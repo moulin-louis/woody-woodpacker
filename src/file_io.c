@@ -8,7 +8,7 @@
 int32_t save_new_file(const t_bin* ptr) {
   const int32_t fd = open("./woody", O_WRONLY | O_CREAT | O_TRUNC, 0777);
   if (fd == -1) {
-    printf("Error opening file\n");
+    fprintf(stderr, "Error opening file\n");
     return 1;
   }
   write(fd, ptr->raw_data, ptr->data_len);

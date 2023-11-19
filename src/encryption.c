@@ -23,7 +23,6 @@ int32_t encryption_64(t_bin* bin) {
   bin->len_key = 32;
   const char* key = getenv("KEY");
   if (key != NULL) {
-    printf("Found key in ENV\n");
     bin->key = (uint8_t *)strdup(key);
     if (bin->key == NULL) {
       return 1;
@@ -47,7 +46,6 @@ int32_t encryption_32(t_bin* bin) {
   bin->len_key = 32;
   const char* key = getenv("KEY");
   if (key != NULL) {
-    printf("Found key in ENV\n");
     bin->key = (uint8_t *)strdup(key);
     if (bin->key == NULL) {
       return 1;

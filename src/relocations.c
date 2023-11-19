@@ -34,7 +34,7 @@ int32_t check_relocations_presence_64(const t_bin* bin) {
   printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
   if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
     printf(ANSI_RED ANSI_CROSS "\n");
-    printf(ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
+    fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
     return 1;
   }
   printf(ANSI_GREEN ANSI_CHECK "\n");
@@ -71,7 +71,7 @@ int32_t check_relocations_presence_32(const t_bin* bin) {
   printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
   if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
     printf(ANSI_RED ANSI_CROSS "\n");
-    printf(ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
+    fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
     return 1;
   }
   printf(ANSI_GREEN ANSI_CHECK "\n");
