@@ -181,7 +181,6 @@ int main(int ac, char** av) {
   return 0;
 }
 
-
 int32_t runtime_32(t_bin* bin) {
   printf(ANSI_RED "WARNING: THIS IS A 32 BITS ELF\n" ANSI_RESET);
   printf(ANSI_GREEN "LOG: Health check.............: ");
