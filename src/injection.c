@@ -1,6 +1,6 @@
 #include "woody.h"
 
-Elf64_Shdr	*get_symtab_header(t_bin *bin) {
+Elf64_Shdr	*get_symtab_header_64(t_bin *bin) {
 	Elf64_Shdr *s_headers = (Elf64_Shdr *)(bin->raw_data + bin->elf64_header->e_shoff);
 	for (uint16_t idx = 0; idx < bin->elf64_header->e_shnum; idx++) {
 		if (s_headers->sh_type == SHT_SYMTAB) {
@@ -12,7 +12,19 @@ Elf64_Shdr	*get_symtab_header(t_bin *bin) {
 	return 0;
 }
 
-void offset_symtab(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
+Elf32_Shdr	*get_symtab_header_32(t_bin *bin) {
+	Elf32_Shdr *s_headers = (Elf32_Shdr *)(bin->raw_data + bin->elf32_header->e_shoff);
+	for (uint16_t idx = 0; idx < bin->elf32_header->e_shnum; idx++) {
+		if (s_headers->sh_type == SHT_SYMTAB) {
+			printf ("symbole table found !!!\n");
+			return s_headers;
+		}
+		s_headers = (Elf32_Shdr *)((void *)s_headers + bin->elf32_header->e_shentsize);
+	}
+	return 0;
+}
+
+void offset_symtab_64(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
 	Elf64_Sym *symtab = (Elf64_Sym *)(bin->raw_data + symtab_header->sh_offset);
 	for (uint16_t idx = 0; idx < 7; idx++) {
 		if (symtab->st_value > cave_begin)
@@ -21,6 +33,15 @@ void offset_symtab(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave_be
 	}
 }
 
+
+void offset_symtab_32(t_bin *bin, Elf32_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
+	Elf32_Sym *symtab = (Elf32_Sym *)(bin->raw_data + symtab_header->sh_offset);
+	for (uint16_t idx = 0; idx < 7; idx++) {
+		if (symtab->st_value > cave_begin)
+			symtab->st_value += resize_needed;
+		symtab = (Elf32_Sym *)((void *)symtab + symtab_header->sh_entsize);
+	}
+}
 
 uint64_t get_resize_64(const t_bin* bin, const uint64_t cave_begin) {
 	for (const phdr_list_64_t* seg_h = bin->phdrs_64; seg_h != 0; seg_h = seg_h->next) {
@@ -94,8 +115,8 @@ void modify_header_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resi
 		}
 	}
 	uint64_t vaddr_offset = bin->phdrs_64->program_header->p_vaddr - bin->phdrs_64->program_header->p_offset;
-	Elf64_Shdr *symtab_header = get_symtab_header(bin);
-	offset_symtab(bin, symtab_header, vaddr_offset + cave_begin, resize_needed);
+	Elf64_Shdr *symtab_header = get_symtab_header_64(bin);
+	offset_symtab_64(bin, symtab_header, vaddr_offset + cave_begin, resize_needed);
 }
 
 void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
@@ -115,6 +136,9 @@ void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resi
 			shdr->sh_addr += resize_needed;
 		}
 	}
+	uint64_t vaddr_offset = bin->phdrs_32->program_header->p_vaddr - bin->phdrs_32->program_header->p_offset;
+	Elf32_Shdr *symtab_header = get_symtab_header_32(bin);
+	offset_symtab_32(bin, symtab_header, vaddr_offset + cave_begin, resize_needed);
 }
 
 int32_t resize_file_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
