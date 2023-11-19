@@ -1,5 +1,7 @@
 #include "woody.h"
-int32_t runtime_32(t_bin *bin);
+
+int32_t runtime_32(t_bin* bin);
+
 //init the bin struct
 int32_t init(t_bin* bin, char** av) {
   //open the infile in readonly
@@ -179,7 +181,7 @@ int main(int ac, char** av) {
   return 0;
 }
 
-int32_t runtime_32(t_bin *bin) {
+int32_t runtime_32(t_bin* bin) {
   printf(ANSI_RED "WARNING: THIS IS A 32 BITS ELF\n" ANSI_RESET);
   printf(ANSI_GREEN "LOG: Health check.............: ");
   bin->elf32_header = (Elf32_Ehdr *)bin->raw_data;

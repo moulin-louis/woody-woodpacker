@@ -56,7 +56,7 @@ int32_t parse_program_headers_64(t_bin* bin) {
   return 0;
 }
 
-int32_t parse_program_headers_32(t_bin *bin) {
+int32_t parse_program_headers_32(t_bin* bin) {
   size_t curr_offset = bin->elf32_header->e_phoff;
 
   //check if the size of program header is correct
@@ -83,7 +83,7 @@ void* get_segment_64(const phdr_list_64_t* head, int32_t (*callback)(const Elf64
   return NULL;
 }
 
-void* get_segment_32(const phdr_list_32_t*head, int32_t (*callback)(const Elf32_Phdr *)) {
+void* get_segment_32(const phdr_list_32_t* head, int32_t (*callback)(const Elf32_Phdr*)) {
   const phdr_list_32_t* tmp = head;
   while (tmp) {
     if (callback(tmp->program_header))

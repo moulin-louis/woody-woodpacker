@@ -33,11 +33,12 @@ int32_t encryption_64(t_bin* bin) {
   else if (get_key(bin->key)) {
     return 1;
   }
-  void* data = bin->raw_data + text_segment->p_offset + (bin->elf64_header->e_entry - text_segment->p_vaddr);
-  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
+  void* data = bin->raw_data + text_segment->p_offset;
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
   return 0;
 }
-int32_t encryption_32(t_bin *bin) {
+
+int32_t encryption_32(t_bin* bin) {
   //get text segment
   const Elf32_Phdr* text_segment = NULL;
   text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
@@ -56,7 +57,7 @@ int32_t encryption_32(t_bin *bin) {
   else if (get_key(bin->key)) {
     return 1;
   }
-  void* data = bin->raw_data + text_segment->p_offset + (bin->elf32_header->e_entry - text_segment->p_vaddr);
-  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf32_header->e_entry - text_segment->p_vaddr));
+  void* data = bin->raw_data + text_segment->p_offset;
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
   return 0;
 }
