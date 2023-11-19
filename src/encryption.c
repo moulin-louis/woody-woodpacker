@@ -38,7 +38,7 @@ int32_t encryption_64(t_bin* bin) {
   return 0;
 }
 
-int32_t encryption_32(t_bin *bin) {
+int32_t encryption_32(t_bin* bin) {
   //get text segment
   const Elf32_Phdr* text_segment = NULL;
   text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);

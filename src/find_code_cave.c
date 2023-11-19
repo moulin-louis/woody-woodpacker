@@ -151,7 +151,6 @@ int find_code_cave_32(t_bin* bin) {
 	uint32_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
 	uint32_t aligned_offset = ALIGN_UP(offset, 4);
 	offset = aligned_offset - offset;
-	printf("offset = %d\n", offset);
 	uint32_t resize_needed = get_resize_32(bin, aligned_offset);
 	if (resize_needed) {
 		resize_needed = ALIGN_UP(resize_needed, 4096);
@@ -164,13 +163,11 @@ int find_code_cave_32(t_bin* bin) {
 		aligned_offset = ALIGN_UP(offset, 4);
 		offset = aligned_offset - offset;
 	}
-	printf("inejcting at offset = %d\n", aligned_offset);
 	memcpy(bin->raw_data + aligned_offset, bin->payload, bin->len_payload);
 	const uint32_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
 	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY_32 + offset;
 	txt_segment_h->p_flags |= PROT_WRITE;
 	txt_segment_h->p_filesz += bin->len_payload + offset;
-	printf("OFFSET == %d\n", offset);
 	txt_segment_h->p_memsz += bin->len_payload + offset;
 	return 0;
 }
