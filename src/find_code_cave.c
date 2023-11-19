@@ -1,6 +1,6 @@
 #include "woody.h"
 
-uint64_t get_resize(const t_bin* bin, const uint64_t cave_begin) {
+uint64_t get_resize_64(const t_bin* bin, const uint64_t cave_begin) {
 	for (const phdr_list_64_t* seg_h = bin->phdrs_64; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_type != PT_LOAD)
 			continue;
@@ -15,7 +15,22 @@ uint64_t get_resize(const t_bin* bin, const uint64_t cave_begin) {
 	return cave_begin + bin->len_payload - bin->data_len;
 }
 
-int32_t reinit_bin_ptr(t_bin* bin) {
+uint64_t get_resize_32(const t_bin* bin, const uint64_t cave_begin) {
+	for (const phdr_list_32_t* seg_h = bin->phdrs_32; seg_h != 0; seg_h = seg_h->next) {
+		if (seg_h->program_header->p_type != PT_LOAD)
+			continue;
+		if (seg_h->program_header->p_offset < cave_begin)
+			continue;
+		if (cave_begin + bin->len_payload < seg_h->program_header->p_offset)
+			return 0;
+		return cave_begin + bin->len_payload - seg_h->program_header->p_offset;
+	}
+	if (cave_begin + bin->len_payload < bin->data_len)
+		return 0;
+	return cave_begin + bin->len_payload - bin->data_len;
+}
+
+int32_t reinit_bin_ptr_64(t_bin* bin) {
 	bin->elf64_header = (Elf64_Ehdr *)bin->raw_data;
 	size_t curr_offset = bin->elf64_header->e_phoff;
 	phdr_list_64_t* current_phdrs = bin->phdrs_64;
@@ -27,7 +42,19 @@ int32_t reinit_bin_ptr(t_bin* bin) {
 	return 0;
 }
 
-void modify_header(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+int32_t reinit_bin_ptr_32(t_bin* bin) {
+	bin->elf32_header = (Elf32_Ehdr *)bin->raw_data;
+	size_t curr_offset = bin->elf32_header->e_phoff;
+	phdr_list_32_t* current_phdrs = bin->phdrs_32;
+	for (uint16_t idx = 0; idx != bin->elf32_header->e_phnum; idx++) {
+		current_phdrs->program_header = (Elf32_Phdr *)(bin->raw_data + curr_offset);
+		curr_offset += bin->elf32_header->e_phentsize;
+		current_phdrs = current_phdrs->next;
+	}
+	return 0;
+}
+
+void modify_header_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
 	for (const phdr_list_64_t* seg_h = bin->phdrs_64; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
@@ -46,7 +73,26 @@ void modify_header(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_
 	}
 }
 
-int32_t resize_file(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+	for (const phdr_list_32_t* seg_h = bin->phdrs_32; seg_h != 0; seg_h = seg_h->next) {
+		if (seg_h->program_header->p_offset > cave_begin) {
+			seg_h->program_header->p_offset += resize_needed;
+			seg_h->program_header->p_vaddr += resize_needed;
+			seg_h->program_header->p_paddr += resize_needed;
+		}
+	}
+	bin->elf32_header->e_shoff += resize_needed;
+	Elf32_Shdr* shdr = (Elf32_Shdr *)(bin->raw_data + bin->elf32_header->e_shoff);
+	for (size_t i = 0; i != bin->elf32_header->e_shnum; i++) {
+		shdr = (Elf32_Shdr *)((void *)shdr + bin->elf32_header->e_shentsize);
+		if (shdr->sh_offset > cave_begin) {
+			shdr->sh_offset += resize_needed;
+			shdr->sh_addr += resize_needed;
+		}
+	}
+}
+
+int32_t resize_file_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
 	bin->raw_data = realloc(bin->raw_data, bin->data_len + resize_needed);
 	if (!bin->raw_data) {
 		perror("realloc");
@@ -54,8 +100,21 @@ int32_t resize_file(t_bin* bin, const uint64_t cave_begin, const uint64_t resize
 	}
 	memcpy(bin->raw_data + cave_begin + resize_needed, bin->raw_data + cave_begin, bin->data_len - cave_begin);
 	bin->data_len += resize_needed;
-	reinit_bin_ptr(bin);
-	modify_header(bin, cave_begin, resize_needed);
+	reinit_bin_ptr_64(bin);
+	modify_header_64(bin, cave_begin, resize_needed);
+	return 0;
+}
+
+int32_t resize_file_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+	bin->raw_data = realloc(bin->raw_data, bin->data_len + resize_needed);
+	if (!bin->raw_data) {
+		perror("realloc");
+		return 1;
+	}
+	memcpy(bin->raw_data + cave_begin + resize_needed, bin->raw_data + cave_begin, bin->data_len - cave_begin);
+	bin->data_len += resize_needed;
+	reinit_bin_ptr_32(bin);
+	modify_header_32(bin, cave_begin, resize_needed);
 	return 0;
 }
 
@@ -65,10 +124,10 @@ int find_code_cave_64(t_bin* bin) {
 	uint64_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
 	uint64_t aligned_offset = ALIGN_UP(offset, 4);
 	offset = aligned_offset - offset;
-	uint64_t resize_needed = get_resize(bin, aligned_offset);
+	uint64_t resize_needed = get_resize_64(bin, aligned_offset);
 	if (resize_needed) {
 		resize_needed = ALIGN_UP(resize_needed, 4096);
-		if (resize_file(bin, aligned_offset, resize_needed)) {
+		if (resize_file_64(bin, aligned_offset, resize_needed)) {
 			return 1;
 		}
 		header = bin->elf64_header;
@@ -92,10 +151,11 @@ int find_code_cave_32(t_bin* bin) {
 	uint32_t offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
 	uint32_t aligned_offset = ALIGN_UP(offset, 4);
 	offset = aligned_offset - offset;
-	uint32_t resize_needed = get_resize(bin, aligned_offset);
+	printf("offset = %d\n", offset);
+	uint32_t resize_needed = get_resize_32(bin, aligned_offset);
 	if (resize_needed) {
 		resize_needed = ALIGN_UP(resize_needed, 4096);
-		if (resize_file(bin, aligned_offset, resize_needed)) {
+		if (resize_file_32(bin, aligned_offset, resize_needed)) {
 			return 1;
 		}
 		header = bin->elf32_header;
@@ -104,11 +164,13 @@ int find_code_cave_32(t_bin* bin) {
 		aligned_offset = ALIGN_UP(offset, 4);
 		offset = aligned_offset - offset;
 	}
+	printf("inejcting at offset = %d\n", aligned_offset);
 	memcpy(bin->raw_data + aligned_offset, bin->payload, bin->len_payload);
 	const uint32_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;
 	header->e_entry += -entry_offset + txt_segment_h->p_memsz + OFFSET_ENTRY_32 + offset;
 	txt_segment_h->p_flags |= PROT_WRITE;
 	txt_segment_h->p_filesz += bin->len_payload + offset;
+	printf("OFFSET == %d\n", offset);
 	txt_segment_h->p_memsz += bin->len_payload + offset;
 	return 0;
 }

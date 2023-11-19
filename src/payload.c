@@ -41,15 +41,16 @@ unsigned char decrypt_fn_32[34] = {
 //craft the full payload with the blueprint, the key and the decrypt function
 int32_t craft_payload_64(t_bin* bin) {
   const Elf64_Phdr* text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
-  const uint32_t size_to_data = 0x42;
-  const uint32_t size_to_entry = 0x5F;
-  const uint32_t offset_jmp_key = 0x2A;
-  const uint32_t offset_jmp_decrypt = 0x2D;
+  const uint32_t start_payload_data = 0x42;
+  const uint32_t start_payload_entry = 0x60;
+  const uint32_t offset_key = 0x2A;
+  const uint32_t offset_decrypt = 13;
 
   //init payload
-  bin->payload = malloc(sizeof(blueprint_payload_64) + sizeof (decrypt_fn_64) + bin->len_key);
+  bin->payload = malloc(sizeof(blueprint_payload_64) + bin->len_key + sizeof(decrypt_fn_64));
   if (bin->payload == NULL)
     return 1;
+  printf("\n");
   memcpy(bin->payload, blueprint_payload_64, sizeof(blueprint_payload_64));
   memcpy(bin->payload + sizeof(blueprint_payload_64), bin->key, bin->len_key);
   memcpy(bin->payload + sizeof(blueprint_payload_64) + bin->len_key, decrypt_fn_64, sizeof(decrypt_fn_64));
@@ -57,34 +58,41 @@ int32_t craft_payload_64(t_bin* bin) {
 
   size_t offset = text_segment->p_offset + text_segment->p_filesz;
   offset = (ALIGN_UP(offset, 4)) - offset;
+  printf("offset = %#lx\n", offset);
+  printf("text filesz = %#lx\n", text_segment->p_filesz);
 
   //  change key offset
-  *(uint32_t *)(bin->payload + OFFSET_KEY_64 + 8) = offset_jmp_key;
+  *(uint32_t *)(bin->payload + OFFSET_KEY_64 + 8) = offset_key;
 
   //  change key_len
   *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_64 + 8) = bin->len_key;
 
   //  change data offset
-  *(uint32_t *)(bin->payload + OFFSET_DATA_64 + 8) = -(size_to_data + text_segment->p_memsz - (bin->elf64_header->e_entry - text_segment->p_vaddr) + offset);
+  *(uint32_t *)(bin->payload + OFFSET_DATA_64 + 8) = -(start_payload_data + text_segment->p_filesz + offset);
 
   //  change data_len
-  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_64 + 8) = text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr);
+  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_64 + 8) = text_segment->p_filesz;
 
   //  change decrypt_fn jmp offset
-  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_64 + 8) = offset_jmp_decrypt; // + bin->len_key;
+  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_64 + 8) = offset_decrypt + bin->len_key;
 
   //  change og_entry jmp offset
-  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_64 + 16) = -(size_to_entry + text_segment->p_memsz - (bin->elf64_header->e_entry - text_segment->p_vaddr) + offset);
+  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_64 + 16) = -(start_payload_entry + text_segment->p_memsz - (bin->elf64_header->e_entry - text_segment->p_vaddr) + offset);;
   // print_info_payload(bin);
   return 0;
 }
 
 int32_t craft_payload_32(t_bin* bin) {
   const Elf32_Phdr* text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
+  const uint32_t start_payload_entry = 0x67;
+  const uint32_t start_payload_data = 0x44;
   const uint32_t offset_key = 0x31;
-  const uint32_t size_to_entry = 0x67;
-  const uint32_t offset_jmp_decrypt = 0x2D;
-
+  const uint32_t offset_decrypt = 0xD;
+  size_t offset = text_segment->p_offset + text_segment->p_filesz;
+  offset = (ALIGN_UP(offset, 4)) - offset;
+  printf("\n");
+  printf("offset = %#lx\n", offset);
+  printf("txt segment filezs = %#x\n", text_segment->p_filesz);
   //init payload
   bin->payload = malloc(sizeof(blueprint_payload_32) + sizeof (decrypt_fn_32) + bin->len_key);
   if (bin->payload == NULL)
@@ -92,32 +100,22 @@ int32_t craft_payload_32(t_bin* bin) {
   memcpy(bin->payload, blueprint_payload_32,  sizeof(blueprint_payload_32));
   memcpy(bin->payload + sizeof(blueprint_payload_32), bin->key, bin->len_key);
   memcpy(bin->payload + sizeof(blueprint_payload_32) + bin->len_key, decrypt_fn_32, sizeof(decrypt_fn_32));
+
   bin->len_payload = sizeof(blueprint_payload_32) + sizeof(decrypt_fn_32) + bin->len_key;
-
-  size_t offset = text_segment->p_offset + text_segment->p_filesz;
-  offset = (ALIGN_UP(offset, 4)) - offset;
-
-  //  change key offset
 
   *(bin->payload + OFFSET_KEY_32) = offset_key;
 
-  //  change key_len
   *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_32) = bin->len_key;
 
-  //  change data offset
-  *(uint32_t *)(bin->payload + OFFSET_DATA_32) = 0x64;
+  printf("sub to esp -> %#x\n", start_payload_data + text_segment->p_filesz);
+  *(uint32_t *)(bin->payload + OFFSET_DATA_32) = start_payload_data + text_segment->p_filesz + offset;
 
-  //  change data_len
-  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_32) = text_segment->p_filesz - (bin->elf32_header->e_entry - text_segment->p_vaddr);
+  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_32) = text_segment->p_filesz;
 
-  //  change decrypt_fn jmp offset
-  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_32) = offset_jmp_decrypt; // + bin->len_key;
+  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_32) = offset_decrypt + bin->len_key;
 
-  //  change og_entry jmp offset
-  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_32) = -(size_to_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);
+  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_32) = -(start_payload_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);;
 
-  printf("HEXDUMP PAYLOAD (WITHOUT KEY AND DECRYPT FN):\n");
-  hexdump(bin->payload, sizeof(blueprint_payload_32), 0);
   printf("HEXDUMP PAYLOAD:\n");
   hexdump(bin->payload, bin->len_payload, 0);
   // print_info_payload(bin);

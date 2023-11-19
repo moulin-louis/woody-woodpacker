@@ -17,7 +17,7 @@
 #define KEY_SIZE 32
 
 //64 BITS
-#define OFFSET_ENTRY_64 15
+#define OFFSET_ENTRY_64 0x0F
 
 #define OFFSET_KEY_64 0x2a
 #define OFFSET_KEY_LEN_64 0x2f
