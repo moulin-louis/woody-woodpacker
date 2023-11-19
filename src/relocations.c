@@ -63,7 +63,7 @@ int32_t check_relocations_presence_32(const t_bin* bin) {
       break;
   }
   if (rela == NULL || relasz == NULL || relaent == NULL) {
-    printf(ANSI_GREEN "LOG: No RELOCATIONS found in the binary\n");
+    printf(ANSI_GREEN "LOG: No RELOCATIONS found or missing RELOCATIONS dyn tag in the binary\n");
     return 0;
   }
   printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
