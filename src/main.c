@@ -77,107 +77,107 @@ int32_t check_elf_header_32(const Elf32_Ehdr* elf32Ehdr) {
   return 0;
 }
 
-int main(int ac, char** av) {
-  t_bin bin = {};
+// int main(int ac, char** av) {
+//   t_bin bin = {};
 
-  if (ac != 2) {
-    printf("Wrong usage\n");
-    return 1;
-  }
+//   if (ac != 2) {
+//     printf("Wrong usage\n");
+//     return 1;
+//   }
 
-  printf(ANSI_GREEN "LOG: Initialization...........: ");
-  //initialization
-  if (init(&bin, av)) {
-    //print emoji error
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error init\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   printf(ANSI_GREEN "LOG: Initialization...........: ");
+//   //initialization
+//   if (init(&bin, av)) {
+//     //print emoji error
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error init\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //heatlh check
-  if (bin.raw_data[0x4] == 1) {
-    return runtime_32(&bin);
-  }
-  printf(ANSI_GREEN "LOG: Health check.............: ");
-  bin.elf64_header = (Elf64_Ehdr *)bin.raw_data;
-  if (check_elf_header_64(bin.elf64_header)) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error checking elf header\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //heatlh check
+//   if (bin.raw_data[0x4] == 1) {
+//     return runtime_32(&bin);
+//   }
+//   printf(ANSI_GREEN "LOG: Health check.............: ");
+//   bin.elf64_header = (Elf64_Ehdr *)bin.raw_data;
+//   if (check_elf_header_64(bin.elf64_header)) {
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error checking elf header\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //parse program headers
-  printf(ANSI_GREEN "LOG: Parsing headers..........: ");
-  if (parse_program_headers_64(&bin)) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error parsing program headers\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //parse program headers
+//   printf(ANSI_GREEN "LOG: Parsing headers..........: ");
+//   if (parse_program_headers_64(&bin)) {
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error parsing program headers\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //check if their some relocation
-  if (get_segment_64(bin.phdrs_64, is_dyn_segment_64) != NULL) {
-    printf(ANSI_YELLOW "WARNING: Found DYNAMIC segment, checking if there is relocation\n");
-    if (check_relocations_presence_64(&bin)) {
-      printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
-      return 0;
-    }
-  }
-  else
-    printf(ANSI_GREEN "LOG: No DYNAMIC segment found.: " ANSI_CHECK "\n");
+//   //check if their some relocation
+//   if (get_segment_64(bin.phdrs_64, is_dyn_segment_64) != NULL) {
+//     printf(ANSI_YELLOW "WARNING: Found DYNAMIC segment, checking if there is relocation\n");
+//     if (check_relocations_presence_64(&bin)) {
+//       printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
+//       return 0;
+//     }
+//   }
+//   else
+//     printf(ANSI_GREEN "LOG: No DYNAMIC segment found.: " ANSI_CHECK "\n");
 
-  //encryption
-  printf(ANSI_GREEN "LOG: Encryption...............: ");
-  if (encryption_64(&bin)) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error encryption\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //encryption
+//   printf(ANSI_GREEN "LOG: Encryption...............: ");
+//   if (encryption_64(&bin)) {
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error encryption\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //prepare payload
-  printf(ANSI_GREEN "LOG: Crafting payload.........: ");
-  if (craft_payload_64(&bin)) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error crafting payload\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //prepare payload
+//   printf(ANSI_GREEN "LOG: Crafting payload.........: ");
+//   if (craft_payload_64(&bin)) {
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error crafting payload\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //inject payload
-  printf(ANSI_GREEN "LOG: Injecting payload........: ");
-  if (find_code_cave_64(&bin)) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    printf("Error finding code cave\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //inject payload
+//   printf(ANSI_GREEN "LOG: Injecting payload........: ");
+//   if (find_code_cave_64(&bin)) {
+//     printf(ANSI_RED ANSI_CROSS "\n");
+//     printf("Error finding code cave\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //save new file
-  printf(ANSI_GREEN "LOG: Creating woody file......: ");
-  if (save_new_file(&bin)) {
-    printf(ANSI_RESET ANSI_CROSS "\n");
-    printf("Error saving new file\n" ANSI_RESET);
-    return 1;
-  }
-  printf(ANSI_CHECK "\n" ANSI_RESET);
+//   //save new file
+//   printf(ANSI_GREEN "LOG: Creating woody file......: ");
+//   if (save_new_file(&bin)) {
+//     printf(ANSI_RESET ANSI_CROSS "\n");
+//     printf("Error saving new file\n" ANSI_RESET);
+//     return 1;
+//   }
+//   printf(ANSI_CHECK "\n" ANSI_RESET);
 
-  //cleanup
-  printf(ANSI_GREEN "LOG: Cleaning up ressources...: ");
-  free(bin.key);
-  free(bin.raw_data);
-  free(bin.payload);
-  for (phdr_list_64_t* tmp = bin.phdrs_64; tmp != NULL;) {
-    phdr_list_64_t* next = tmp->next;
-    free(tmp);
-    tmp = next;
-  }
-  printf(ANSI_CHECK ANSI_RESET "\n");
+//   //cleanup
+//   printf(ANSI_GREEN "LOG: Cleaning up ressources...: ");
+//   free(bin.key);
+//   free(bin.raw_data);
+//   free(bin.payload);
+//   for (phdr_list_64_t* tmp = bin.phdrs_64; tmp != NULL;) {
+//     phdr_list_64_t* next = tmp->next;
+//     free(tmp);
+//     tmp = next;
+//   }
+//   printf(ANSI_CHECK ANSI_RESET "\n");
 
-  return 0;
-}
+//   return 0;
+// }
 
 int32_t runtime_32(t_bin *bin) {
   printf(ANSI_RED "WARNING: THIS IS A 32 BITS ELF\n" ANSI_RESET);
