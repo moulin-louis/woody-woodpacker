@@ -5,13 +5,18 @@
 // #include "woody.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 #define AES_KEY_LEN 16
 #define AES_ROUNDS 11
 //expose symbol for asm code
 // void encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data);
 
-uint32_t rot_word_left(uint32_t word, uint8_t nb) {
-	return (word << 8 * nb) | (word >> (32 - 8 * nb));
+
+
+uint32_t rot_word_left(uint32_t word, uint16_t nb) {
+	return (word << nb) | (word >> (32 - nb));
 }
 
 uint8_t sub_letter(uint8_t letter) {
@@ -41,6 +46,7 @@ uint32_t sub_word(uint32_t word) {
 void add_round_key(uint8_t *current_segment, const uint8_t *expanded_key, uint8_t round) {
 	uint64_t *segment64 = (uint64_t *)current_segment;
 	uint64_t *key64 = (uint64_t *)(expanded_key);
+
 	segment64[0] ^= key64[0 + round * 2];
 	segment64[1] ^= key64[1 + round * 2];
 }
@@ -60,14 +66,14 @@ void inv_sub_bytes(uint8_t *current_segment) {
 // void shift_rows(uint8_t *current_segment) {
 // 	uint32_t *words_segment = (uint32_t *)current_segment;
 // 	for (uint8_t i = 1; i < 4; i++) {
-// 		words_segment[i] = rot_word_left(words_segment[i], i);
+// 		words_segment[i] = rot_word_left(words_segment[i], 8 * i);
 // 	}
 // }
 
 void	inv_shift_rows(uint8_t *current_segment) {
 	uint32_t *words_segment = (uint32_t *)current_segment;
 	for (uint8_t i = 1; i < 4; i++) {
-		words_segment[i] = rot_word_left(words_segment[i], 4 - i);
+		words_segment[i] = rot_word_left(words_segment[i], 8 * (4 - i));
 	}
 }
 
@@ -104,15 +110,6 @@ uint8_t	galois_mul(uint8_t a, uint8_t b) {
 	return res;
 }
 
-void	inv_multiply_column(uint8_t *current_segment, uint8_t column) {
-	for (uint8_t i = 0; i < 4; i++) {
-		current_segment[i * 4 + column] = galois_mul(current_segment[i * 4 + column], 14) ^
-			galois_mul(current_segment[((i + 1) % 4) * 4 + column], 11) ^
-			galois_mul(current_segment[((i + 2) % 4) * 4 + column], 13) ^
-			galois_mul(current_segment[((i + 3) % 4) * 4 + column], 9);
-	}
-}
-
 // void mix_columns(uint8_t *current_segment) {
 // 	for (uint8_t column = 0; column < 4; column++) {
 // 		multiply_column(current_segment, column);
@@ -120,9 +117,14 @@ void	inv_multiply_column(uint8_t *current_segment, uint8_t column) {
 // }
 
 void	inv_mix_columns(uint8_t *current_segment) {
-	for (uint8_t column = 0; column < 4; column++) {
-		inv_multiply_column(current_segment, column);
+	uint8_t new_segment[16];
+	for (uint8_t i = 0; i < 16; i++) {
+			new_segment[i] = galois_mul(current_segment[i], 14) ^
+				galois_mul(current_segment[((i + 4) % 16)], 11) ^
+				galois_mul(current_segment[((i + 8) % 16)], 13) ^
+				galois_mul(current_segment[((i + 12) % 16)], 9);
 	}
+	memcpy(current_segment, new_segment, 16);
 }
 
 // void	encrypt_segment(uint8_t *current_segment, const uint8_t *expanded_key) {
@@ -159,7 +161,7 @@ void generate_keys(const uint8_t *key, uint8_t expanded_key[AES_KEY_LEN * AES_RO
 		if (i % 4)
 			words_keys[i] = words_keys[i - 4] ^ words_keys[i - 1];
 		else {
-			words_keys[i] = words_keys[i - 4] ^ sub_word(rot_word_left(words_keys[i - 1], 1)) ^ (round_constant << 24);
+			words_keys[i] = words_keys[i - 4] ^ sub_word(rot_word_left(words_keys[i - 1], 8)) ^ (round_constant << 24);
 			round_constant = galois_mul(round_constant, 2);
 		}
 	}
@@ -167,37 +169,35 @@ void generate_keys(const uint8_t *key, uint8_t expanded_key[AES_KEY_LEN * AES_RO
 
 // void aes_encrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 // 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
-// 	generate_keys(key, expanded_key);
-// 	uint8_t current_segment[16];
 
-// 	for (uint16_t data_offset = 0; data_offset < len_data; data_offset++) {
-// 		current_segment[data_offset % 16] = data[data_offset];
-// 		if (data_offset % 16 == 15) {
-// 			encrypt_segment(current_segment, expanded_key);
-// 			memcpy(data + data_offset - 15, current_segment, 16);
-// 		}
+// 	generate_keys(key, expanded_key);
+// 	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
+// 			encrypt_segment(data + data_offset, expanded_key);
 // 	}
 // }
 
 void aes_decrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
-	generate_keys(key, expanded_key);
-	uint8_t current_segment[16];
 
-	for (uint16_t data_offset = 0; data_offset < len_data; data_offset++) {
-		current_segment[data_offset % 16] = data[data_offset];
-		if (data_offset % 16 == 15) {
-			decrypt_segment(current_segment, expanded_key);
-			memcpy(data + data_offset - 15, current_segment, 16);
-		}
+	generate_keys(key, expanded_key);
+	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
+			decrypt_segment(data + data_offset, expanded_key);
 	}
 }
 
 int main() {
-	uint8_t data[18] = "bonjourbonjourabab";
+	uint64_t data_len = 100000000;
+	uint8_t c = 105;
+	// uint8_t *data_base = calloc(data_len, 1);
+	uint8_t *data = calloc(data_len, 1);
+	// memset(data_base, c, data_len);
+	memset(data, c, data_len);
+	
+	// uint8_t data[901] = "bonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourabab";
 	uint8_t	key[16] = "abcdefghijklmnop";
-	// aes_encrypt(key, data, 18);
-	aes_decrypt(key, data, 18);
+	// aes_encrypt(key, data, data_len);
+	aes_decrypt(key, data, data_len);
+	// printf("is ok: %d\n", memcmp(data, data_base, data_len));
 }
 
 // //temporary xor encrypt
