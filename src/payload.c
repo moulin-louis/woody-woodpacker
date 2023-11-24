@@ -17,13 +17,13 @@ uint8_t blueprint_payload_64[96] = {
 };
 
 //shellcode for the xor_decrypt function
-uint8_t decrypt_fn_64_2[38] = {
+uint8_t decrypt_fn_64[38] = {
   0x41, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x4C, 0x89, 0xC8, 0x52, 0xBA, 0x00, 0x00,
   0x00, 0x00, 0x48, 0xF7, 0xF6, 0x0F, 0xB6, 0x04, 0x17, 0x5A, 0x42, 0x30, 0x04,
   0x0A, 0x49, 0xFF, 0xC1, 0x4C, 0x39, 0xC9, 0x75, 0xE3, 0x41, 0xFF, 0xE0
 };
 
-unsigned char decrypt_fn_64[590] = {
+unsigned char decrypt_fn_64_2[590] = {
 	0x41, 0x50, 0x49, 0x89, 0xF4, 0x48, 0x89, 0xD5, 0x31, 0xDB, 0x48, 0x81,
 	0xEC, 0xC8, 0x00, 0x00, 0x00, 0x31, 0xC0, 0x4C, 0x8D, 0x6C, 0x24, 0x08,
 	0x4C, 0x89, 0xEE, 0xE8, 0xCE, 0x01, 0x00, 0x00, 0x48, 0x39, 0xEB, 0x73,
@@ -110,6 +110,7 @@ int32_t craft_payload_64(t_bin* bin) {
   bin->len_payload = sizeof(blueprint_payload_64) + sizeof(decrypt_fn_64) + bin->len_key;
   size_t offset = text_segment->p_offset + text_segment->p_filesz;
   offset = (ALIGN_UP(offset, 4)) - offset;
+
   *(uint32_t *)(bin->payload + OFFSET_KEY_64 + 8) = offset_key;
   *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_64 + 8) = bin->len_key;
   *(uint32_t *)(bin->payload + OFFSET_DATA_64 + 8) = -(start_payload_data + text_segment->p_filesz + offset);
@@ -135,6 +136,7 @@ int32_t craft_payload_32(t_bin* bin) {
   memcpy(bin->payload + sizeof(blueprint_payload_32), bin->key, bin->len_key);
   memcpy(bin->payload + sizeof(blueprint_payload_32) + bin->len_key, decrypt_fn_32, sizeof(decrypt_fn_32));
   bin->len_payload = sizeof(blueprint_payload_32) + sizeof(decrypt_fn_32) + bin->len_key;
+  
   *(bin->payload + OFFSET_KEY_32) = offset_key;
   *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_32) = bin->len_key;
   *(uint32_t *)(bin->payload + OFFSET_DATA_32) = start_payload_data + text_segment->p_filesz + offset;

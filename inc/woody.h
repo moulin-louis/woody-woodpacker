@@ -14,7 +14,7 @@
 #include <elf.h>
 #include <stdbool.h>
 
-#define KEY_SIZE 32
+#define KEY_SIZE 16
 #define OFFSET_ENTRY 0x0F
 
 //64 BITS
