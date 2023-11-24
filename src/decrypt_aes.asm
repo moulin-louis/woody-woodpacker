@@ -10,14 +10,14 @@ aes_decrypt:
   lea    r13, [rsp+0x8]
   mov    rsi, r13
   call   generate_keys
-  cmp    rbx, rbp ; data_offset < data_len
-  jae    aes_decrypt+0x50
+  cmp    rbx, rbp ; data_offset < data_len    jmp 20
+  jae    aes_decrypt+0x37
   lea    rdi, [r12+rbx*1]
   mov    rsi, r13
   add    rbx, 0x10 ; data_offset += 16
   call   decrypt_segment
-  jmp    aes_decrypt+0x39 ; end loop
-  add    rsp, 0xc8
+  jmp    aes_decrypt+0x20 ; end loop
+  add    rsp, 0xc8   ; jmp 37
 	pop		 r8
   jmp    r8      
 
@@ -52,12 +52,12 @@ sub_word:
   mov    dword [rsp+0x4], edi
   lea    rcx, [rsp+0x4]
   lea    rsi, [rsp+0x8]
-  movzx  edi, byte [rcx]
+  movzx  edi, byte [rcx]   ; jmp f
   inc    rcx
   call   sub_letter
   mov    byte [rcx-0x1], al
   cmp    rcx, rsi
-  jne    sub_word+0x13
+  jne    sub_word+0xf		
   mov    eax, dword [rsp+0x4]
   pop    rdx
   ret    
@@ -77,12 +77,12 @@ add_round_key:
 inv_sub_bytes:
   mov    rsi, rdi
   xor    ecx, ecx
-  movzx  edi, byte [rsi+rcx*1]
+  movzx  edi, byte [rsi+rcx*1] ; jmp 5
   call   inv_sub_letter
   mov    byte [rsi+rcx*1], al
   inc    rcx
   cmp    rcx, 0x10
-  jne    inv_sub_bytes+0x9
+  jne    inv_sub_bytes+0x5
   ret    
 
 ;inv_shift_rows:
@@ -93,29 +93,29 @@ inv_sub_bytes:
 
 galois_mul:
   xor    eax, eax
-  test   dil, dil
-  je     galois_mul+0x2e
+  test   dil, dil			; jmp 2
+  je     galois_mul+0x2a
   test   sil, sil
-  je     galois_mul+0x2e
+  je     galois_mul+0x2a
   test   sil, 0x1
-  je     galois_mul+0x18
+  je     galois_mul+0x14
   xor    eax, edi
-  lea    edx, [rdi+rdi*1]
+  lea    edx, [rdi+rdi*1] ; jmp 14
   lea    ecx, [rdi+rdi*1]
   xor    edx, 0x1b
   test   dil, dil
   cmovns edx, ecx
   shr    sil, 1
   mov    edi, edx
-  jmp    galois_mul+0x6
-  ret    
+  jmp    galois_mul+0x2
+  ret    						; jmp 2a
 
 inv_mix_columns:
   sub    rsp, 0x28
   mov    r10, rdi
   xor    r9d, r9d
   xor    eax, eax
-  movzx  edi, byte [r10+r9*1] ; begin loop
+  movzx  edi, byte [r10+r9*1] ; begin loop jmp c
   mov    esi, 0xe
   call   galois_mul
   mov    esi, 0xb
@@ -140,7 +140,7 @@ inv_mix_columns:
   mov    byte [rsp+r9*1+0x8], r8b
   inc    r9
   cmp    r9, 0x10
-  jne    inv_mix_columns+0x1e ; jump to begin loop
+  jne    inv_mix_columns+0xc ; jump to begin loop
   movups xmm0, [rsp+0x8]
   movups [r10], xmm0
   add    rsp, 0x28
@@ -155,7 +155,7 @@ decrypt_segment:
   push   rbx
   mov    ebx, 0x9
   call   add_round_key
-  mov    rdi, rbp
+  mov    rdi, rbp			; jmp 19
   ror    dword [rdi+0x4], 0x8
   rol    dword [rdi+0x8], 0x10
   rol    dword [rdi+0xc], 0x8
@@ -166,7 +166,7 @@ decrypt_segment:
   call   add_round_key
   call   inv_mix_columns
   dec    ebx
-  jne    decrypt_segment+0x1d
+  jne    decrypt_segment+0x19
   mov    rdi, rbp
   ror    dword [rdi+0x4], 0x8
   rol    dword [rdi+0x8], 0x10
@@ -187,13 +187,13 @@ generate_keys:
 	mov    r10d, 0x4
 	mov    r9b, 0x1
 	movups [rsi], xmm0
-	mov    ebx, dword [r11+r10*4-0x10]
+	mov    ebx, dword [r11+r10*4-0x10] ; jmp 13
 	mov    r8d, dword [r11+r10*4-0x4]
 	test   r10b, 0x3
-	je     generate_keys+0x2c
+	je     generate_keys+0x28
 	xor    r8d, ebx
-	jmp    generate_keys+0x55
-	mov    edi, r8d
+	jmp    generate_keys+0x51
+	mov    edi, r8d			; jmp 28
 	rol    edi, 0x8
 	call   sub_word
 	movzx  edi, r9b
@@ -204,9 +204,9 @@ generate_keys:
 	xor    r8d, eax
 	call   galois_mul
 	mov    r9d, eax
-	mov    dword [r11+r10*4], r8d
+	mov    dword [r11+r10*4], r8d ; jmp 51
 	inc    r10
 	cmp    r10, 0x2c
-	jne    generate_keys+0x17
+	jne    generate_keys+0x13
 	pop    rbx
 	ret
