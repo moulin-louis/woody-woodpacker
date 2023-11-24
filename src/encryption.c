@@ -197,10 +197,10 @@ void aes_decrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 // }
 
 // //temporary xor encrypt
-// void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
-//   for (size_t i = 0; i < len_data; i++)
-//     data[i] ^= key[i % len_key];
-// }
+void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
+  for (size_t i = 0; i < len_data; i++)
+    data[i] ^= key[i % len_key];
+}
 
 //Encrypt the text segment base on a random key provided by urandom or the user in the ENV
 int32_t encryption_64(t_bin* bin) {
@@ -217,13 +217,17 @@ int32_t encryption_64(t_bin* bin) {
       return 1;
     }
     bin->len_key = strlen((char *)bin->key);
+	if (bin->len_key != KEY_SIZE) {
+		return 1;
+	}
   }
   else if (get_key(bin->key)) {
     return 1;
   }
 
   void* data = bin->raw_data + text_segment->p_offset;
-	aes_encrypt(bin->key, data, text_segment->p_filesz);
+  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
+//   aes_encrypt(bin->key, data, text_segment->p_filesz);
   return 0;
 }
 
