@@ -4,20 +4,21 @@ aes_decrypt:
 	push   r8
   mov    r12, rsi
   mov    rbp, rdx
+	sub		 rbp, 0x10
   xor    ebx, ebx
   sub    rsp, 0xc8
   xor    eax, eax
   lea    r13, [rsp+0x8]
   mov    rsi, r13
   call   generate_keys
-  cmp    rbx, rbp ; data_offset < data_len    jmp 20
-  jae    aes_decrypt+0x37
+  cmp    rbx, rbp ; data_offset < data_len    jmp 24
+  jae    aes_decrypt+0x3b
   lea    rdi, [r12+rbx*1]
   mov    rsi, r13
   add    rbx, 0x10 ; data_offset += 16
   call   decrypt_segment
-  jmp    aes_decrypt+0x20 ; end loop
-  add    rsp, 0xc8   ; jmp 37
+  jmp    aes_decrypt+0x24 ; end loop
+  add    rsp, 0xc8   ; jmp 3b
 	pop		 r8
   jmp    r8      
 

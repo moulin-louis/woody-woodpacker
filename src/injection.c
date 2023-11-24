@@ -8,7 +8,7 @@ uint64_t get_resize_64(const t_bin* bin, const uint64_t cave_begin) {
 			continue;
 		if (cave_begin + bin->len_payload < seg_h->program_header->p_offset)
 			return 0;
-		return cave_begin + bin->len_payload - seg_h->program_header->p_offset;
+		return -1;
 	}
 	if (cave_begin + bin->len_payload < bin->data_len)
 		return 0;

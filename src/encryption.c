@@ -3,7 +3,9 @@
 //
 
 #include "woody.h"
-
+// #include <stdio.h>
+// #include <stdint.h>
+// #include <string.h>
 #define AES_KEY_LEN 16
 #define AES_ROUNDS 11
 //expose symbol for asm code
@@ -167,8 +169,8 @@ void aes_encrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
 
 	generate_keys(key, expanded_key);
-	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
-			encrypt_segment(data + data_offset, expanded_key);
+	for (uint64_t data_offset = 0; data_offset + 16 < len_data; data_offset += 16) {
+		encrypt_segment(data + data_offset, expanded_key);
 	}
 }
 
@@ -176,33 +178,55 @@ void aes_decrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
 
 	generate_keys(key, expanded_key);
-	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
+	for (uint64_t data_offset = 0; data_offset + 16 < len_data; data_offset += 16) {
 			decrypt_segment(data + data_offset, expanded_key);
 	}
 }
 
 // int main() {
-// 	uint64_t data_len = 100000000;
-// 	uint8_t c = 105;
-// 	// uint8_t *data_base = calloc(data_len, 1);
-// 	uint8_t *data = calloc(data_len, 1);
+// 	// uint64_t data_len = 100000000;
+// 	// uint8_t c = 105;
+// 	// // uint8_t *data_base = calloc(data_len, 1);
+// 	// uint8_t *data = calloc(data_len, 1);
+// 	unsigned char data[37] = {
+// 	// Offset 0x00001000 to 0x00001024
+// 	0xBF, 0x01, 0x00, 0x00, 0x00, 0x48, 0xBE, 0x00, 0x20, 0x40, 0x00, 0x00,
+// 	0x00, 0x00, 0x00, 0xBA, 0x09, 0x00, 0x00, 0x00, 0xB8, 0x01, 0x00, 0x00,
+// 	0x00, 0x0F, 0x05, 0x48, 0x31, 0xFF, 0xB8, 0x3C, 0x00, 0x00, 0x00, 0x0F,
+// 	0x05
+// };
+
 // 	// memset(data_base, c, data_len);
-// 	memset(data, c, data_len);
+// 	// memset(data, c, data_len);
 	
 // 	// uint8_t data[901] = "bonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourabab";
-// 	uint8_t	key[16] = "abcdefghijklmnop";
-// 	// aes_encrypt(key, data, data_len);
-// 	aes_decrypt(key, data, data_len);
+// 	unsigned char key[16] = {
+// 	// Offset 0x00001088 to 0x00001097
+// 	0xCA, 0xFC, 0xB4, 0xB5, 0xD6, 0x77, 0xED, 0x6F, 0xED, 0xAD, 0xB9, 0x13,
+// 	0xD0, 0x1A, 0x39, 0xCC
+// };
+
+// 	// aes_encrypt(key, data, 37);
+// 	// for(int i = 0; i < 37; i++) {
+// 	// 	printf("%2x ", data[i]);
+// 	// }
+// 	// printf("\n");
+// 	aes_decrypt(key, data, 37);
+// 	// for(int i = 0; i < 37; i++) {
+// 	// 	printf("%2x ", data[i]);
+// 	// }
+// 	// printf("\n");
 // 	// printf("is ok: %d\n", memcmp(data, data_base, data_len));
+	
 // }
 
-// //temporary xor encrypt
-void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
-  for (size_t i = 0; i < len_data; i++)
-    data[i] ^= key[i % len_key];
-}
+// // //temporary xor encrypt
+// void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
+//   for (size_t i = 0; i < len_data; i++)
+//     data[i] ^= key[i % len_key];
+// }
 
-//Encrypt the text segment base on a random key provided by urandom or the user in the ENV
+// Encrypt the text segment base on a random key provided by urandom or the user in the ENV
 int32_t encryption_64(t_bin* bin) {
   //get text segment
   const Elf64_Phdr* text_segment = NULL;
@@ -226,8 +250,8 @@ int32_t encryption_64(t_bin* bin) {
   }
 
   void* data = bin->raw_data + text_segment->p_offset;
-  xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
-//   aes_encrypt(bin->key, data, text_segment->p_filesz);
+  // xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz);
+  aes_encrypt(bin->key, data, text_segment->p_filesz);
   return 0;
 }
 
