@@ -32,9 +32,22 @@ int32_t check_relocations_presence_64(const t_bin* bin) {
   printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
   //checking if relocation can cause problem
   printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
-	if (rela->d_un.d_val >= bin->data_len)
-		return 0;
-	uint64_t addr_rela = *(uint64_t *)(bin->raw_data + rela->d_un.d_val);
+  for (uint32_t idx = 0; idx < relasz->d_un.d_val / relaent->d_un.d_val; idx++) {
+    if (rela->d_un.d_val + idx * relaent->d_un.d_val >= bin->data_len)
+      continue;
+    const Elf64_Rela* tmp = (Elf64_Rela *)(bin->raw_data + rela->d_un.d_val + idx * relaent->d_un.d_val);
+    const uint64_t addr_rela = tmp->r_offset;
+    if (addr_rela >= text_segment->p_vaddr && addr_rela <= text_segment->p_vaddr + text_segment->p_memsz) {
+      printf(ANSI_RED ANSI_CROSS "\n");
+      fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
+      return 1;
+    }
+  }
+  if (rela->d_un.d_val >= bin->data_len) {
+    printf(ANSI_GREEN ANSI_CHECK "\n");
+    return 0;
+  }
+  const uint64_t addr_rela = *(uint64_t *)(bin->raw_data + rela->d_un.d_val);
   if (addr_rela >= text_segment->p_vaddr && addr_rela <= text_segment->p_vaddr + text_segment->p_memsz) {
     printf(ANSI_RED ANSI_CROSS "\n");
     fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
@@ -69,13 +82,15 @@ int32_t check_relocations_presence_32(const t_bin* bin) {
     printf(ANSI_GREEN "LOG: No RELOCATIONS found or missing RELOCATIONS dyn tag in the binary\n");
     return 0;
   }
-  printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
-  //checking if relocation can cause problem
-  printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
-  if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
-    printf(ANSI_RED ANSI_CROSS "\n");
-    fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
-    return 1;
+  //check if all relocation cause problem
+  for (uint32_t idx = 0; idx < relasz->d_un.d_val / relaent->d_un.d_val; idx++) {
+    const Elf32_Rela* tmp = (Elf32_Rela *)(bin->raw_data + rela->d_un.d_val + idx * relaent->d_un.d_val);
+    const uint64_t addr_rela = tmp->r_offset;
+    if (addr_rela >= text_segment->p_vaddr && addr_rela <= text_segment->p_vaddr + text_segment->p_memsz) {
+      printf(ANSI_RED ANSI_CROSS "\n");
+      fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
+      return 1;
+    }
   }
   printf(ANSI_GREEN ANSI_CHECK "\n");
   printf(ANSI_GREEN "LOG: No RELOCATIONS in the text segment\n" ANSI_RESET);
