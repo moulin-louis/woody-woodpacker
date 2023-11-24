@@ -2,12 +2,8 @@
 // Created by loumouli on 11/9/23.
 //
 
-// #include "woody.h"
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
+#include "woody.h"
+
 #define AES_KEY_LEN 16
 #define AES_ROUNDS 11
 //expose symbol for asm code
@@ -51,11 +47,11 @@ void add_round_key(uint8_t *current_segment, const uint8_t *expanded_key, uint8_
 	segment64[1] ^= key64[1 + round * 2];
 }
 
-// void sub_bytes(uint8_t *current_segment) {
-// 	for (uint8_t id = 0; id < 16; id++) {
-// 		current_segment[id] = sub_letter(current_segment[id]);
-// 	}
-// }
+void sub_bytes(uint8_t *current_segment) {
+	for (uint8_t id = 0; id < 16; id++) {
+		current_segment[id] = sub_letter(current_segment[id]);
+	}
+}
 
 void inv_sub_bytes(uint8_t *current_segment) {
 	for (uint8_t id = 0; id < 16; id++) {
@@ -63,12 +59,12 @@ void inv_sub_bytes(uint8_t *current_segment) {
 	}
 }
 
-// void shift_rows(uint8_t *current_segment) {
-// 	uint32_t *words_segment = (uint32_t *)current_segment;
-// 	for (uint8_t i = 1; i < 4; i++) {
-// 		words_segment[i] = rot_word_left(words_segment[i], 8 * i);
-// 	}
-// }
+void shift_rows(uint8_t *current_segment) {
+	uint32_t *words_segment = (uint32_t *)current_segment;
+	for (uint8_t i = 1; i < 4; i++) {
+		words_segment[i] = rot_word_left(words_segment[i], 8 * i);
+	}
+}
 
 void	inv_shift_rows(uint8_t *current_segment) {
 	uint32_t *words_segment = (uint32_t *)current_segment;
@@ -77,24 +73,24 @@ void	inv_shift_rows(uint8_t *current_segment) {
 	}
 }
 
-// void multiply_column(uint8_t *current_segment, uint8_t column) {
-// 	uint8_t	current_col[4];
-// 	uint8_t	double_col[4];
-// 	uint8_t	new_col[4];
+void multiply_column(uint8_t *current_segment, uint8_t column) {
+	uint8_t	current_col[4];
+	uint8_t	double_col[4];
+	uint8_t	new_col[4];
 
-// 	for (uint8_t i = 0; i < 4; i++) {
-// 		current_col[i] = current_segment[i * 4 + column];
-// 		double_col[i] = current_col[i] << 1;
-// 		double_col[i] ^= (current_col[i] >> 7) * 0x1b; // xor with 1b if result would be larger than ff
-// 	}
-// 	new_col[0] = double_col[0] ^ current_col[3] ^ current_col[2] ^ double_col[1] ^ current_col[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
-// 	new_col[1] = double_col[1] ^ current_col[0] ^ current_col[3] ^ double_col[2] ^ current_col[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
-// 	new_col[2] = double_col[2] ^ current_col[1] ^ current_col[0] ^ double_col[3] ^ current_col[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
-// 	new_col[3] = double_col[3] ^ current_col[2] ^ current_col[1] ^ double_col[0] ^ current_col[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
-// 	for (uint8_t i = 0; i < 4; i++) {
-// 		current_segment[i * 4 + column] = new_col[i];
-// 	}
-// }
+	for (uint8_t i = 0; i < 4; i++) {
+		current_col[i] = current_segment[i * 4 + column];
+		double_col[i] = current_col[i] << 1;
+		double_col[i] ^= (current_col[i] >> 7) * 0x1b; // xor with 1b if result would be larger than ff
+	}
+	new_col[0] = double_col[0] ^ current_col[3] ^ current_col[2] ^ double_col[1] ^ current_col[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
+	new_col[1] = double_col[1] ^ current_col[0] ^ current_col[3] ^ double_col[2] ^ current_col[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
+	new_col[2] = double_col[2] ^ current_col[1] ^ current_col[0] ^ double_col[3] ^ current_col[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
+	new_col[3] = double_col[3] ^ current_col[2] ^ current_col[1] ^ double_col[0] ^ current_col[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
+	for (uint8_t i = 0; i < 4; i++) {
+		current_segment[i * 4 + column] = new_col[i];
+	}
+}
 
 uint8_t	galois_mul(uint8_t a, uint8_t b) {
 	uint8_t res = 0;
@@ -110,11 +106,11 @@ uint8_t	galois_mul(uint8_t a, uint8_t b) {
 	return res;
 }
 
-// void mix_columns(uint8_t *current_segment) {
-// 	for (uint8_t column = 0; column < 4; column++) {
-// 		multiply_column(current_segment, column);
-// 	}
-// }
+void mix_columns(uint8_t *current_segment) {
+	for (uint8_t column = 0; column < 4; column++) {
+		multiply_column(current_segment, column);
+	}
+}
 
 void	inv_mix_columns(uint8_t *current_segment) {
 	uint8_t new_segment[16];
@@ -127,18 +123,18 @@ void	inv_mix_columns(uint8_t *current_segment) {
 	memcpy(current_segment, new_segment, 16);
 }
 
-// void	encrypt_segment(uint8_t *current_segment, const uint8_t *expanded_key) {
-// 	add_round_key(current_segment, expanded_key, 0);
-// 	for (uint8_t i = 1; i < AES_ROUNDS - 1; i++) {
-// 		sub_bytes(current_segment);
-// 		shift_rows(current_segment);
-// 		mix_columns(current_segment);
-// 		add_round_key(current_segment, expanded_key, i);
-// 	}
-// 	sub_bytes(current_segment);
-// 	shift_rows(current_segment);
-// 	add_round_key(current_segment, expanded_key, AES_ROUNDS - 1);
-// }
+void	encrypt_segment(uint8_t *current_segment, const uint8_t *expanded_key) {
+	add_round_key(current_segment, expanded_key, 0);
+	for (uint8_t i = 1; i < AES_ROUNDS - 1; i++) {
+		sub_bytes(current_segment);
+		shift_rows(current_segment);
+		mix_columns(current_segment);
+		add_round_key(current_segment, expanded_key, i);
+	}
+	sub_bytes(current_segment);
+	shift_rows(current_segment);
+	add_round_key(current_segment, expanded_key, AES_ROUNDS - 1);
+}
 
 void	decrypt_segment(uint8_t *current_segment, const uint8_t *expanded_key) {
 	add_round_key(current_segment, expanded_key, AES_ROUNDS - 1);
@@ -167,14 +163,14 @@ void generate_keys(const uint8_t *key, uint8_t expanded_key[AES_KEY_LEN * AES_RO
 	}
 }
 
-// void aes_encrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
-// 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
+void aes_encrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
+	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
 
-// 	generate_keys(key, expanded_key);
-// 	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
-// 			encrypt_segment(data + data_offset, expanded_key);
-// 	}
-// }
+	generate_keys(key, expanded_key);
+	for (uint64_t data_offset = 0; data_offset < len_data; data_offset += 16) {
+			encrypt_segment(data + data_offset, expanded_key);
+	}
+}
 
 void aes_decrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 	uint8_t expanded_key[AES_KEY_LEN * AES_ROUNDS];
@@ -185,20 +181,20 @@ void aes_decrypt(const uint8_t *key, uint8_t *data, const uint64_t len_data) {
 	}
 }
 
-int main() {
-	uint64_t data_len = 100000000;
-	uint8_t c = 105;
-	// uint8_t *data_base = calloc(data_len, 1);
-	uint8_t *data = calloc(data_len, 1);
-	// memset(data_base, c, data_len);
-	memset(data, c, data_len);
+// int main() {
+// 	uint64_t data_len = 100000000;
+// 	uint8_t c = 105;
+// 	// uint8_t *data_base = calloc(data_len, 1);
+// 	uint8_t *data = calloc(data_len, 1);
+// 	// memset(data_base, c, data_len);
+// 	memset(data, c, data_len);
 	
-	// uint8_t data[901] = "bonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourabab";
-	uint8_t	key[16] = "abcdefghijklmnop";
-	// aes_encrypt(key, data, data_len);
-	aes_decrypt(key, data, data_len);
-	// printf("is ok: %d\n", memcmp(data, data_base, data_len));
-}
+// 	// uint8_t data[901] = "bonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourababbonjourbonjourabab";
+// 	uint8_t	key[16] = "abcdefghijklmnop";
+// 	// aes_encrypt(key, data, data_len);
+// 	aes_decrypt(key, data, data_len);
+// 	// printf("is ok: %d\n", memcmp(data, data_base, data_len));
+// }
 
 // //temporary xor encrypt
 // void xor_encrypt(const uint8_t *key, const uint64_t len_key, uint8_t *data, const uint64_t len_data) {
@@ -206,51 +202,51 @@ int main() {
 //     data[i] ^= key[i % len_key];
 // }
 
-// //Encrypt the text segment base on a random key provided by urandom or the user in the ENV
-// int32_t encryption_64(t_bin* bin) {
-//   //get text segment
-//   const Elf64_Phdr* text_segment = NULL;
-//   text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
-//   //get key from urandom
-//   bin->key = calloc(1, KEY_SIZE);
-//   bin->len_key = 32;
-//   const char* key = getenv("KEY");
-//   if (key != NULL) {
-//     printf("Found key in ENV\n");
-//     bin->key = (uint8_t *)strdup(key);
-//     if (bin->key == NULL) {
-//       return 1;
-//     }
-//     bin->len_key = strlen((char *)bin->key);
-//   }
-//   else if (get_key(bin->key)) {
-//     return 1;
-//   }
-//   void* data = bin->raw_data + text_segment->p_offset + (bin->elf64_header->e_entry - text_segment->p_vaddr);
-// 	aes_encrypt(bin->key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
-//   // xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
-//   return 0;
-// }
-// int32_t encryption_32(t_bin *bin) {
-//   //get text segment
-//   const Elf32_Phdr* text_segment = NULL;
-//   text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
-//   //get key from urandom
-//   bin->key = calloc(1, KEY_SIZE);
-//   bin->len_key = 32;
-//   const char* key = getenv("KEY");
-//   if (key != NULL) {
-//     printf("Found key in ENV\n");
-//     bin->key = (uint8_t *)strdup(key);
-//     if (bin->key == NULL) {
-//       return 1;
-//     }
-//     bin->len_key = strlen((char *)bin->key);
-//   }
-//   else if (get_key(bin->key)) {
-//     return 1;
-//   }
-//   void* data = bin->raw_data + text_segment->p_offset + (bin->elf32_header->e_entry - text_segment->p_vaddr);
-//   xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf32_header->e_entry - text_segment->p_vaddr));
-//   return 0;
-// }
+//Encrypt the text segment base on a random key provided by urandom or the user in the ENV
+int32_t encryption_64(t_bin* bin) {
+  //get text segment
+  const Elf64_Phdr* text_segment = NULL;
+  text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
+  //get key from urandom
+  bin->key = calloc(1, KEY_SIZE);
+  bin->len_key = 16;
+  const char* key = getenv("KEY");
+  if (key != NULL) {
+    printf("Found key in ENV\n");
+    bin->key = (uint8_t *)strdup(key);
+    if (bin->key == NULL) {
+      return 1;
+    }
+    bin->len_key = strlen((char *)bin->key);
+  }
+  else if (get_key(bin->key)) {
+    return 1;
+  }
+  void* data = bin->raw_data + text_segment->p_offset + (bin->elf64_header->e_entry - text_segment->p_vaddr);
+	aes_encrypt(bin->key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
+  // xor_encrypt(bin->key, bin->len_key, data, text_segment->p_filesz - (bin->elf64_header->e_entry - text_segment->p_vaddr));
+  return 0;
+}
+int32_t encryption_32(t_bin *bin) {
+  //get text segment
+  const Elf32_Phdr* text_segment = NULL;
+  text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
+  //get key from urandom
+  bin->key = calloc(1, KEY_SIZE);
+  bin->len_key = 32;
+  const char* key = getenv("KEY");
+  if (key != NULL) {
+    printf("Found key in ENV\n");
+    bin->key = (uint8_t *)strdup(key);
+    if (bin->key == NULL) {
+      return 1;
+    }
+    bin->len_key = strlen((char *)bin->key);
+  }
+  else if (get_key(bin->key)) {
+    return 1;
+  }
+  void* data = bin->raw_data + text_segment->p_offset + (bin->elf32_header->e_entry - text_segment->p_vaddr);
+  aes_encrypt(bin->key, data, text_segment->p_filesz - (bin->elf32_header->e_entry - text_segment->p_vaddr));
+  return 0;
+}
