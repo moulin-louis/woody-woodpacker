@@ -32,7 +32,10 @@ int32_t check_relocations_presence_64(const t_bin* bin) {
   printf(ANSI_YELLOW "WARNING: Found RELOCATIONS in the binary\n");
   //checking if relocation can cause problem
   printf(ANSI_GREEN "LOG: Checking if RELOCATIONS can cause problem....: ");
-  if (rela->d_un.d_ptr >= text_segment->p_vaddr && rela->d_un.d_ptr <= text_segment->p_vaddr + text_segment->p_memsz) {
+	if (rela->d_un.d_val >= bin->data_len)
+		return 0;
+	uint64_t addr_rela = *(uint64_t *)(bin->raw_data + rela->d_un.d_val);
+  if (addr_rela >= text_segment->p_vaddr && addr_rela <= text_segment->p_vaddr + text_segment->p_memsz) {
     printf(ANSI_RED ANSI_CROSS "\n");
     fprintf(stderr, ANSI_RED "ERROR: RELOCATIONS in the text segment\n" ANSI_RESET);
     return 1;
