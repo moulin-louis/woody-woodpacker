@@ -26,7 +26,7 @@ Elf32_Shdr	*get_symtab_header_32(t_bin *bin) {
 
 void offset_symtab_64(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
 	Elf64_Sym *symtab = (Elf64_Sym *)(bin->raw_data + symtab_header->sh_offset);
-	for (uint16_t idx = 0; idx < 7; idx++) {
+	for (uint32_t idx = 0; idx < 7; idx++) {
 		if (symtab->st_value > cave_begin)
 			symtab->st_value += resize_needed;
 		symtab = (Elf64_Sym *)((void *)symtab + symtab_header->sh_entsize);
@@ -36,7 +36,7 @@ void offset_symtab_64(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave
 
 void offset_symtab_32(t_bin *bin, Elf32_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
 	Elf32_Sym *symtab = (Elf32_Sym *)(bin->raw_data + symtab_header->sh_offset);
-	for (uint16_t idx = 0; idx < 7; idx++) {
+	for (uint32_t idx = 0; idx < 7; idx++) {
 		if (symtab->st_value > cave_begin)
 			symtab->st_value += resize_needed;
 		symtab = (Elf32_Sym *)((void *)symtab + symtab_header->sh_entsize);
@@ -66,7 +66,7 @@ uint64_t get_resize_32(const t_bin* bin, const uint64_t cave_begin) {
 			continue;
 		if (cave_begin + bin->len_payload < seg_h->program_header->p_offset)
 			return 0;
-		return cave_begin + bin->len_payload - seg_h->program_header->p_offset;
+		return -1;
 	}
 	if (cave_begin + bin->len_payload < bin->data_len)
 		return 0;
@@ -77,7 +77,7 @@ int32_t reinit_bin_ptr_64(t_bin* bin) {
 	bin->elf64_header = (Elf64_Ehdr *)bin->raw_data;
 	size_t curr_offset = bin->elf64_header->e_phoff;
 	phdr_list_64_t* current_phdrs = bin->phdrs_64;
-	for (uint16_t idx = 0; idx != bin->elf64_header->e_phnum; idx++) {
+	for (uint64_t idx = 0; idx != bin->elf64_header->e_phnum; idx++) {
 		current_phdrs->program_header = (Elf64_Phdr *)(bin->raw_data + curr_offset);
 		curr_offset += bin->elf64_header->e_phentsize;
 		current_phdrs = current_phdrs->next;
@@ -89,7 +89,7 @@ int32_t reinit_bin_ptr_32(t_bin* bin) {
 	bin->elf32_header = (Elf32_Ehdr *)bin->raw_data;
 	size_t curr_offset = bin->elf32_header->e_phoff;
 	phdr_list_32_t* current_phdrs = bin->phdrs_32;
-	for (uint16_t idx = 0; idx != bin->elf32_header->e_phnum; idx++) {
+	for (uint64_t idx = 0; idx != bin->elf32_header->e_phnum; idx++) {
 		current_phdrs->program_header = (Elf32_Phdr *)(bin->raw_data + curr_offset);
 		curr_offset += bin->elf32_header->e_phentsize;
 		current_phdrs = current_phdrs->next;
@@ -138,7 +138,7 @@ void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resi
 			shdr->sh_addr += resize_needed;
 		}
 	}
-	uint64_t vaddr_offset = bin->phdrs_32->program_header->p_vaddr - bin->phdrs_32->program_header->p_offset;
+	uint32_t vaddr_offset = bin->phdrs_32->program_header->p_vaddr - bin->phdrs_32->program_header->p_offset;
 	Elf32_Shdr *symtab_header = get_symtab_header_32(bin);
 	if (!symtab_header)
 		return ;
@@ -210,9 +210,20 @@ int find_code_cave_32(t_bin* bin) {
 	uint32_t aligned_offset = ALIGN_UP(offset, 4);
 	offset = aligned_offset - offset;
 	uint32_t resize_needed = get_resize_32(bin, aligned_offset);
-	if (resize_needed) {
+	if (resize_needed == (uint32_t)-1) {
 		fprintf(stderr, "Resize file needed!");
 		return 1;
+	}
+	if (resize_needed) {
+		resize_needed = ALIGN_UP(resize_needed, 4096);
+		if (resize_file_32(bin, aligned_offset, resize_needed)) {
+			return 1;
+		}
+		header = bin->elf32_header;
+		txt_segment_h = get_segment_32(bin->phdrs_32, is_text_segment_32);
+		offset = txt_segment_h->p_offset + txt_segment_h->p_filesz;
+		aligned_offset = ALIGN_UP(offset, 4);
+		offset = aligned_offset - offset;
 	}
 	memcpy(bin->raw_data + aligned_offset, bin->payload, bin->len_payload);
 	const uint32_t entry_offset = header->e_entry - txt_segment_h->p_vaddr;

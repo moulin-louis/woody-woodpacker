@@ -142,6 +142,6 @@ int32_t craft_payload_32(t_bin* bin) {
   *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_32) = text_segment->p_filesz;
   *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_32) = offset_decrypt + bin->len_key;
   *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_32) = -(
-    start_payload_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);;
+    start_payload_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);
   return 0;
 }
