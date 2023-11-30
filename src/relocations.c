@@ -10,6 +10,9 @@ int32_t check_relocations_presence_64(const t_bin* bin) {
   if (dyn_header == NULL)
     return 1;
   const Elf64_Phdr* text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
+  if (text_segment->p_offset == 0) {
+    return 2;
+  }
   const Elf64_Dyn* rela = NULL;
   const Elf64_Dyn* relasz = NULL;
   const Elf64_Dyn* relaent = NULL;
@@ -63,6 +66,9 @@ int32_t check_relocations_presence_32(const t_bin* bin) {
   if (dyn_header == NULL)
     return 1;
   const Elf32_Phdr* text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
+  if (text_segment->p_offset == 0) {
+    return 2;
+  }
   const Elf32_Dyn* rela = NULL;
   const Elf32_Dyn* relasz = NULL;
   const Elf32_Dyn* relaent = NULL;

@@ -121,10 +121,11 @@ int main(int ac, char** av) {
   //check if their some relocation
   if (get_segment_64(bin.phdrs_64, is_dyn_segment_64) != NULL) {
     printf(ANSI_YELLOW "WARNING: Found DYNAMIC segment, checking if there is relocation\n");
-    if (check_relocations_presence_64(&bin)) {
-      printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
-      return 0;
-    }
+    const int retval = check_relocations_presence_64(&bin);
+    if (retval == 2)
+      return printf(ANSI_RED "ERROR: Cant encrypt an executables with text segment offset at 0!!\n" ANSI_RESET);
+    if (retval == 1)
+        return printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
   }
   else
     printf(ANSI_GREEN "LOG: No DYNAMIC segment found.: " ANSI_CHECK "\n");
@@ -203,10 +204,11 @@ int32_t runtime_32(t_bin* bin) {
   //check if their some relocation
   if (get_segment_32(bin->phdrs_32, is_dyn_segment_32) != NULL) {
     printf(ANSI_YELLOW "WARNING: Found DYNAMIC segment, checking if there is relocation\n");
-    if (check_relocations_presence_32(bin)) {
-      printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
-      return 0;
-    }
+    const int retval = check_relocations_presence_32(bin);
+    if (retval == 2)
+      return printf(ANSI_RED "ERROR: Cant encrypt an executables with text segment offset at 0!!\n" ANSI_RESET);
+    if (retval == 1)
+        return printf(ANSI_RED "ERROR: Cant encrypt an executables with relocation in it!!\n" ANSI_RESET);
   }
   else
     printf(ANSI_GREEN "LOG: No DYNAMIC segment found.: " ANSI_CHECK "\n");
