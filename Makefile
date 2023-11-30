@@ -14,13 +14,13 @@ NAME		= woody_woodpacker
 #               SOURCES              #
 # ################################## #
 C_DIR		= src
-C_FILES		=	main.c\
-				encryption.c\
-				injection.c\
-				segment.c\
-				file_io.c\
-				debug_utils.c\
-				payload.c\
+C_FILES		=	main.c			\
+				encryption.c	\
+				injection.c		\
+				segment.c		\
+				file_io.c		\
+				debug_utils.c	\
+				payload.c		\
 				relocations.c
 				
 
