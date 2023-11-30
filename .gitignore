@@ -60,3 +60,4 @@ cmake-build-release
 samples/*
 ./woody
 woody
+woody_woodpacker
