@@ -19,9 +19,9 @@ unsigned char blueprint_payload_64[96] = {
 
 //shellcode for the xor_decrypt function
 uint8_t decrypt_fn_64_2[38] = {
-  0x41, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x4C, 0x89, 0xC8, 0x52, 0xBA, 0x00, 0x00,
-  0x00, 0x00, 0x48, 0xF7, 0xF6, 0x0F, 0xB6, 0x04, 0x17, 0x5A, 0x42, 0x30, 0x04,
-  0x0A, 0x49, 0xFF, 0xC1, 0x4C, 0x39, 0xC9, 0x75, 0xE3, 0x41, 0xFF, 0xE0
+	0x41, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x4C, 0x89, 0xC8, 0x52, 0xBA, 0x00, 0x00,
+	0x00, 0x00, 0x48, 0xF7, 0xF6, 0x0F, 0xB6, 0x04, 0x17, 0x5A, 0x42, 0x30, 0x04,
+	0x0A, 0x49, 0xFF, 0xC1, 0x4C, 0x39, 0xC9, 0x75, 0xE3, 0x41, 0xFF, 0xE0
 };
 
 unsigned char decrypt_fn_64[594] = {
@@ -79,69 +79,69 @@ unsigned char decrypt_fn_64[594] = {
 
 
 unsigned char blueprint_payload_32[103] = {
-  0x2E, 0x2E, 0x2E, 0x2E, 0x57, 0x4F, 0x4F, 0x44, 0x59, 0x2E, 0x2E, 0x2E, 0x2E, 0x0A, 0x0F, 0x50, 0x51, 0x52, 0x53,
-  0x54, 0x55, 0x56, 0x57, 0xB8, 0x04, 0x00, 0x00, 0x00, 0xBB, 0x01, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00,
-  0x59, 0x83, 0xE9, 0x26, 0xBA, 0x0E, 0x00, 0x00, 0x00, 0xCD, 0x80, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5F, 0x83, 0xC7,
-  0x15, 0xBE, 0x24, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5A, 0x81, 0xEA, 0x15, 0x00, 0x00, 0x00, 0xB9,
-  0x15, 0x00, 0x00, 0x00, 0xe8, 0x00, 0x00, 0x00, 0x00, 0xE9, 0xFF, 0xFF, 0xFF, 0xFF, 0x5F, 0x5E, 0x5D, 0x5C, 0x5B,
-  0x5A, 0x59, 0x58, 0xE9, 0xFF, 0xFF, 0xFF, 0xFF
+	0x2E, 0x2E, 0x2E, 0x2E, 0x57, 0x4F, 0x4F, 0x44, 0x59, 0x2E, 0x2E, 0x2E, 0x2E, 0x0A, 0x0F, 0x50, 0x51, 0x52, 0x53,
+	0x54, 0x55, 0x56, 0x57, 0xB8, 0x04, 0x00, 0x00, 0x00, 0xBB, 0x01, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00,
+	0x59, 0x83, 0xE9, 0x26, 0xBA, 0x0E, 0x00, 0x00, 0x00, 0xCD, 0x80, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5F, 0x83, 0xC7,
+	0x15, 0xBE, 0x24, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5A, 0x81, 0xEA, 0x15, 0x00, 0x00, 0x00, 0xB9,
+	0x15, 0x00, 0x00, 0x00, 0xe8, 0x00, 0x00, 0x00, 0x00, 0xE9, 0xFF, 0xFF, 0xFF, 0xFF, 0x5F, 0x5E, 0x5D, 0x5C, 0x5B,
+	0x5A, 0x59, 0x58, 0xE9, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
 unsigned char decrypt_fn_32[34] = {
-  0xBB, 0x00, 0x00, 0x00, 0x00, 0x89, 0xD8, 0x52, 0xBA, 0x00, 0x00, 0x00,
-  0x00, 0xF7, 0xF6, 0x0F, 0xB6, 0x04, 0x17, 0x5A, 0x30, 0x04, 0x1A, 0x43,
-  0x39, 0xD9, 0x75, 0xE9, 0x58, 0x83, 0xC0, 0x05, 0xFF, 0xE0,
+	0xBB, 0x00, 0x00, 0x00, 0x00, 0x89, 0xD8, 0x52, 0xBA, 0x00, 0x00, 0x00,
+	0x00, 0xF7, 0xF6, 0x0F, 0xB6, 0x04, 0x17, 0x5A, 0x30, 0x04, 0x1A, 0x43,
+	0x39, 0xD9, 0x75, 0xE9, 0x58, 0x83, 0xC0, 0x05, 0xFF, 0xE0,
 };
 
 //craft the full payload with the blueprint, the key and the decrypt function
 int32_t craft_payload_64(t_bin* bin) {
-  const Elf64_Phdr* text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
-  const uint32_t start_payload_data = 0x42;
-  const uint32_t start_payload_entry = 0x60;
-  const uint32_t offset_key = 0x2A;
-  const uint32_t offset_decrypt = 13;
-  bin->payload = malloc(sizeof(blueprint_payload_64) + bin->len_key + sizeof(decrypt_fn_64));
-  if (bin->payload == NULL)
-    return 1;
-  memcpy(bin->payload, blueprint_payload_64, sizeof(blueprint_payload_64));
-  memcpy(bin->payload + sizeof(blueprint_payload_64), bin->key, bin->len_key);
-  memcpy(bin->payload + sizeof(blueprint_payload_64) + bin->len_key, decrypt_fn_64, sizeof(decrypt_fn_64));
-  bin->len_payload = sizeof(blueprint_payload_64) + sizeof(decrypt_fn_64) + bin->len_key;
-  size_t offset = text_segment->p_offset + text_segment->p_filesz;
-  offset = (ALIGN_UP(offset, 4)) - offset;
+	const Elf64_Phdr* text_segment = get_segment_64(bin->phdrs_64, is_text_segment_64);
+	const uint32_t start_payload_data = 0x42;
+	const uint32_t start_payload_entry = 0x60;
+	const uint32_t offset_key = 0x2A;
+	const uint32_t offset_decrypt = 13;
+	bin->payload = malloc(sizeof(blueprint_payload_64) + bin->len_key + sizeof(decrypt_fn_64));
+	if (bin->payload == NULL)
+		return 1;
+	memcpy(bin->payload, blueprint_payload_64, sizeof(blueprint_payload_64));
+	memcpy(bin->payload + sizeof(blueprint_payload_64), bin->key, bin->len_key);
+	memcpy(bin->payload + sizeof(blueprint_payload_64) + bin->len_key, decrypt_fn_64, sizeof(decrypt_fn_64));
+	bin->len_payload = sizeof(blueprint_payload_64) + sizeof(decrypt_fn_64) + bin->len_key;
+	size_t offset = text_segment->p_offset + text_segment->p_filesz;
+	offset = (ALIGN_UP(offset, 4)) - offset;
 
-  *(uint32_t *)(bin->payload + OFFSET_KEY_64 + 8) = offset_key;
-  *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_64 + 8) = bin->len_key;
-  *(uint32_t *)(bin->payload + OFFSET_DATA_64 + 8) = -(start_payload_data + text_segment->p_filesz + offset);
-  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_64 + 8) = text_segment->p_filesz;
-  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_64 + 8) = offset_decrypt + bin->len_key;
-  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_64 + 16) = -(
-    start_payload_entry + text_segment->p_memsz - (bin->elf64_header->e_entry - text_segment->p_vaddr) + offset);;
-  return 0;
+	*(uint32_t *)(bin->payload + OFFSET_KEY_64 + 8) = offset_key;
+	*(uint32_t *)(bin->payload + OFFSET_KEY_LEN_64 + 8) = bin->len_key;
+	*(uint32_t *)(bin->payload + OFFSET_DATA_64 + 8) = -(start_payload_data + text_segment->p_filesz + offset);
+	*(uint32_t *)(bin->payload + OFFSET_DATA_LEN_64 + 8) = text_segment->p_filesz;
+	*(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_64 + 8) = offset_decrypt + bin->len_key;
+	*(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_64 + 16) = -(
+		start_payload_entry + text_segment->p_memsz - (bin->elf64_header->e_entry - text_segment->p_vaddr) + offset);;
+	return 0;
 }
 
 int32_t craft_payload_32(t_bin* bin) {
-  const Elf32_Phdr* text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
-  const uint32_t start_payload_entry = 0x67;
-  const uint32_t start_payload_data = 0x44;
-  const uint32_t offset_key = 0x31;
-  const uint32_t offset_decrypt = 0xD;
-  size_t offset = text_segment->p_offset + text_segment->p_filesz;
-  offset = (ALIGN_UP(offset, 4)) - offset;
-  bin->payload = malloc(sizeof(blueprint_payload_32) + sizeof (decrypt_fn_32) + bin->len_key);
-  if (bin->payload == NULL)
-    return 1;
-  memcpy(bin->payload, blueprint_payload_32, sizeof(blueprint_payload_32));
-  memcpy(bin->payload + sizeof(blueprint_payload_32), bin->key, bin->len_key);
-  memcpy(bin->payload + sizeof(blueprint_payload_32) + bin->len_key, decrypt_fn_32, sizeof(decrypt_fn_32));
-  bin->len_payload = sizeof(blueprint_payload_32) + sizeof(decrypt_fn_32) + bin->len_key;
-  
-  *(bin->payload + OFFSET_KEY_32) = offset_key;
-  *(uint32_t *)(bin->payload + OFFSET_KEY_LEN_32) = bin->len_key;
-  *(uint32_t *)(bin->payload + OFFSET_DATA_32) = start_payload_data + text_segment->p_filesz + offset;
-  *(uint32_t *)(bin->payload + OFFSET_DATA_LEN_32) = text_segment->p_filesz;
-  *(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_32) = offset_decrypt + bin->len_key;
-  *(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_32) = -(
-    start_payload_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);
-  return 0;
+	const Elf32_Phdr* text_segment = get_segment_32(bin->phdrs_32, is_text_segment_32);
+	const uint32_t start_payload_entry = 0x67;
+	const uint32_t start_payload_data = 0x44;
+	const uint32_t offset_key = 0x31;
+	const uint32_t offset_decrypt = 0xD;
+	size_t offset = text_segment->p_offset + text_segment->p_filesz;
+	offset = (ALIGN_UP(offset, 4)) - offset;
+	bin->payload = malloc(sizeof(blueprint_payload_32) + sizeof (decrypt_fn_32) + bin->len_key);
+	if (bin->payload == NULL)
+		return 1;
+	memcpy(bin->payload, blueprint_payload_32, sizeof(blueprint_payload_32));
+	memcpy(bin->payload + sizeof(blueprint_payload_32), bin->key, bin->len_key);
+	memcpy(bin->payload + sizeof(blueprint_payload_32) + bin->len_key, decrypt_fn_32, sizeof(decrypt_fn_32));
+	bin->len_payload = sizeof(blueprint_payload_32) + sizeof(decrypt_fn_32) + bin->len_key;
+
+	*(bin->payload + OFFSET_KEY_32) = offset_key;
+	*(uint32_t *)(bin->payload + OFFSET_KEY_LEN_32) = bin->len_key;
+	*(uint32_t *)(bin->payload + OFFSET_DATA_32) = start_payload_data + text_segment->p_filesz + offset;
+	*(uint32_t *)(bin->payload + OFFSET_DATA_LEN_32) = text_segment->p_filesz;
+	*(uint32_t *)(bin->payload + OFFSET_DECRYPT_FN_32) = offset_decrypt + bin->len_key;
+	*(uint32_t *)(bin->payload + OFFSET_OG_ENTRY_32) = -(
+		start_payload_entry + text_segment->p_memsz - (bin->elf32_header->e_entry - text_segment->p_vaddr) + offset);
+	return 0;
 }

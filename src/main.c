@@ -1,7 +1,6 @@
 #include "woody.h"
 
 int32_t runtime_32(t_bin* bin);
-char extern_value = true;
 
 //init the bin struct
 int32_t init(t_bin* bin, char** av) {

@@ -1,10 +1,10 @@
 #include "woody.h"
 
-Elf64_Shdr	*get_symtab_header_64(t_bin *bin) {
-	Elf64_Shdr *s_headers = (Elf64_Shdr *)(bin->raw_data + bin->elf64_header->e_shoff);
+Elf64_Shdr* get_symtab_header_64(const t_bin* bin) {
+	Elf64_Shdr* s_headers = (Elf64_Shdr *)(bin->raw_data + bin->elf64_header->e_shoff);
 	for (uint16_t idx = 0; idx < bin->elf64_header->e_shnum; idx++) {
 		if (s_headers->sh_type == SHT_SYMTAB) {
-			printf ("symbole table found !!!\n");
+			printf("symbole table found !!!\n");
 			return s_headers;
 		}
 		s_headers = (Elf64_Shdr *)((void *)s_headers + bin->elf64_header->e_shentsize);
@@ -12,11 +12,11 @@ Elf64_Shdr	*get_symtab_header_64(t_bin *bin) {
 	return 0;
 }
 
-Elf32_Shdr	*get_symtab_header_32(t_bin *bin) {
-	Elf32_Shdr *s_headers = (Elf32_Shdr *)(bin->raw_data + bin->elf32_header->e_shoff);
+Elf32_Shdr* get_symtab_header_32(const t_bin* bin) {
+	Elf32_Shdr* s_headers = (Elf32_Shdr *)(bin->raw_data + bin->elf32_header->e_shoff);
 	for (uint16_t idx = 0; idx < bin->elf32_header->e_shnum; idx++) {
 		if (s_headers->sh_type == SHT_SYMTAB) {
-			printf ("symbole table found !!!\n");
+			printf("symbole table found !!!\n");
 			return s_headers;
 		}
 		s_headers = (Elf32_Shdr *)((void *)s_headers + bin->elf32_header->e_shentsize);
@@ -24,8 +24,9 @@ Elf32_Shdr	*get_symtab_header_32(t_bin *bin) {
 	return 0;
 }
 
-void offset_symtab_64(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
-	Elf64_Sym *symtab = (Elf64_Sym *)(bin->raw_data + symtab_header->sh_offset);
+void offset_symtab_64(const t_bin* bin, const Elf64_Shdr* symtab_header, const uint64_t cave_begin,
+                      const uint64_t resize_needed) {
+	Elf64_Sym* symtab = (Elf64_Sym *)(bin->raw_data + symtab_header->sh_offset);
 	for (uint32_t idx = 0; idx < 7; idx++) {
 		if (symtab->st_value > cave_begin)
 			symtab->st_value += resize_needed;
@@ -34,8 +35,9 @@ void offset_symtab_64(t_bin *bin, Elf64_Shdr *symtab_header, const uint64_t cave
 }
 
 
-void offset_symtab_32(t_bin *bin, Elf32_Shdr *symtab_header, const uint64_t cave_begin, const uint64_t resize_needed) {
-	Elf32_Sym *symtab = (Elf32_Sym *)(bin->raw_data + symtab_header->sh_offset);
+void offset_symtab_32(const t_bin* bin, const Elf32_Shdr* symtab_header, const uint64_t cave_begin,
+                      const uint64_t resize_needed) {
+	Elf32_Sym* symtab = (Elf32_Sym *)(bin->raw_data + symtab_header->sh_offset);
 	for (uint32_t idx = 0; idx < 7; idx++) {
 		if (symtab->st_value > cave_begin)
 			symtab->st_value += resize_needed;
@@ -97,7 +99,7 @@ int32_t reinit_bin_ptr_32(t_bin* bin) {
 	return 0;
 }
 
-void modify_header_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+void modify_header_64(const t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
 	for (const phdr_list_64_t* seg_h = bin->phdrs_64; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
@@ -114,14 +116,14 @@ void modify_header_64(t_bin* bin, const uint64_t cave_begin, const uint64_t resi
 			shdr->sh_addr += resize_needed;
 		}
 	}
-	uint64_t vaddr_offset = bin->phdrs_64->program_header->p_vaddr - bin->phdrs_64->program_header->p_offset;
-	Elf64_Shdr *symtab_header = get_symtab_header_64(bin);
+	const uint64_t vaddr_offset = bin->phdrs_64->program_header->p_vaddr - bin->phdrs_64->program_header->p_offset;
+	const Elf64_Shdr* symtab_header = get_symtab_header_64(bin);
 	if (!symtab_header)
-		return ;
+		return;
 	offset_symtab_64(bin, symtab_header, vaddr_offset + cave_begin, resize_needed);
 }
 
-void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
+void modify_header_32(const t_bin* bin, const uint64_t cave_begin, const uint64_t resize_needed) {
 	for (const phdr_list_32_t* seg_h = bin->phdrs_32; seg_h != 0; seg_h = seg_h->next) {
 		if (seg_h->program_header->p_offset > cave_begin) {
 			seg_h->program_header->p_offset += resize_needed;
@@ -138,10 +140,10 @@ void modify_header_32(t_bin* bin, const uint64_t cave_begin, const uint64_t resi
 			shdr->sh_addr += resize_needed;
 		}
 	}
-	uint32_t vaddr_offset = bin->phdrs_32->program_header->p_vaddr - bin->phdrs_32->program_header->p_offset;
-	Elf32_Shdr *symtab_header = get_symtab_header_32(bin);
+	const uint32_t vaddr_offset = bin->phdrs_32->program_header->p_vaddr - bin->phdrs_32->program_header->p_offset;
+	const Elf32_Shdr* symtab_header = get_symtab_header_32(bin);
 	if (!symtab_header)
-		return ;
+		return;
 	offset_symtab_32(bin, symtab_header, vaddr_offset + cave_begin, resize_needed);
 }
 
